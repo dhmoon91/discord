@@ -16,10 +16,39 @@ def getSummonerRank(name: str):
   user = watcher.summoner.by_name(my_region, name)
   ranked_stat= watcher.league.by_summoner(my_region, user['id'])
 
+  # Get summoner Icon Image
+  profileiconid = user['profileIconId']
+  version = watcher.data_dragon.versions_for_region(my_region)['v']
+  summoner_icon_image_url = f"http://ddragon.leagueoflegends.com/cdn/{version}/img/profileicon/{profileiconid}.png"
+
+  user_name = user['name']
+  summoner_level = user['summonerLevel']
+
+
   # Find solo queue data.
   solo_rank_stat =  pydash.find(ranked_stat, {"queueType":"RANKED_SOLO_5x5"})
-  
-  return ' '.join([solo_rank_stat['tier'], solo_rank_stat['rank']])
+
+  tier_division = solo_rank_stat['tier']
+  tier_rank = solo_rank_stat['rank']
+
+
+  tier_image = f"ranked-emblems/Emblem_{tier_division}.png"
+
+  tier = ' '.join([tier_division, tier_rank])
+
+  solo_win = solo_rank_stat['wins']
+  solo_loss = solo_rank_stat['losses']
+
+  summoner_profile = {
+    'user_name' : user_name,
+    'summoner_icon_image_url' : summoner_icon_image_url,
+    'summoner_level': summoner_level,
+    'tier_image' : tier_image,
+    'tier': tier,
+    'solo_win': solo_win,
+    'solo_loss': solo_loss,
+  }
+  return summoner_profile
 
 # Get previous match history of summoner.
 def previousMatch(name:str):

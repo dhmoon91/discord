@@ -36,8 +36,35 @@ async def on_member_join(member):
 
 @bot.command(name='rank', help='Get rank of summoner')
 async def get_rank(ctx, name:str):
-  embed = discord.Embed(title = "Rank", description = getSummonerRank(name))
-  await ctx.send(embed = embed)
+  summoner_info = getSummonerRank(name)
+
+  embed = discord.Embed(title = "Solo/Duo Rank", color = discord.Color.dark_gray())
+
+  summoner_name = summoner_info['user_name']
+  
+  # Add author, thumbnail, fields, and footer to the embed
+  embed.set_author(name=summoner_name, url=f"https://na.op.gg/summoner/userName={summoner_name}", icon_url=summoner_info['summoner_icon_image_url'])
+  
+  # Get image of tier by path
+  tier_image = summoner_info['tier_image']
+  file = discord.File(tier_image)
+  # Need to get the filename in order to attach to the thumbnail
+  tier_image_filename = tier_image.replace('ranked-emblems/', '')
+  # Embed thumbnail image of tier at the side of the embed
+  embed.set_thumbnail(url=f"attachment://{tier_image_filename}")
+
+  # Setting variables for summoner information to display as field
+  summoner_rank = summoner_info['tier']
+  solo_win = summoner_info['solo_win']
+  solo_loss = summoner_info['solo_loss']
+  summoner_total_game = solo_win + solo_loss
+  solo_rank_percentage = int(solo_win / summoner_total_game * 100)
+
+
+  embed.add_field(name=summoner_rank, 
+  value=f"Total Games Played: {summoner_total_game}\n{solo_win}W {solo_loss}L {solo_rank_percentage}%", 
+  inline=False)
+  await ctx.send(file=file, embed = embed)
 
 @bot.command(name='last_match', help='Get last match history')
 async def get_last_match(ctx, name:str):
