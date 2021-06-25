@@ -1,0 +1,7 @@
+###### Requirements without Version Specifiers ######`
+discord
+python-dotenv
+pydash
+pandas
+riotwatcher
+dataframe_image
