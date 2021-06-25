@@ -10,7 +10,7 @@ DISCORD_TOKEN={TOKEN}
 
 3. Install required pip library:
    ` pip3 install -r requirements.txt`
-4. Run `npx nodemon --exec python3 bot-main.py`
+4. Run `npx nodemon --exec python3 bot.py`
 5. IF ^ fails, `python3 bot-main.py`
 
 ## Packages:
