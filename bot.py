@@ -37,13 +37,15 @@ async def on_member_join(member):
 @bot.command(name='rank', help='Get rank of summoner')
 async def get_rank(ctx, name:str):
   summoner_info = getSummonerRank(name)
-
+  
   embed = discord.Embed(title = "Solo/Duo Rank", color = discord.Color.dark_gray())
 
   summoner_name = summoner_info['user_name']
   
+  # Removing space of the summoner name to access op.gg url of the summoner 
+  summoner_name_opgg = summoner_name.replace(" ", "")
   # Add author, thumbnail, fields, and footer to the embed
-  embed.set_author(name=summoner_name, url=f"https://na.op.gg/summoner/userName={summoner_name}", icon_url=summoner_info['summoner_icon_image_url'])
+  embed.set_author(name=summoner_name, url=f"https://na.op.gg/summoner/userName={summoner_name_opgg}", icon_url=summoner_info['summoner_icon_image_url'])
   
   # Get image of tier by path
   tier_image = summoner_info['tier_image']
