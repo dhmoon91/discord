@@ -27,7 +27,7 @@ def previousMatch(name:str):
   matches = watcher.match.matchlist_by_account(my_region, user['accountId'])
   last_match = matches['matches'][0]
   match_detail = watcher.match.by_id(my_region, last_match['gameId'])
-
+  print('teatea')
   # check league's latest version
   latest = watcher.data_dragon.versions_for_region(my_region)['n']['champion']
   # Get static info.
