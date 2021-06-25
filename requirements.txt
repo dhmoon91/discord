@@ -5,3 +5,5 @@ pydash
 pandas
 riotwatcher
 dataframe_image
+beautifulsoup4
+html2image

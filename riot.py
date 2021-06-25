@@ -53,12 +53,14 @@ def previousMatch(name:str):
     participants_row['Deaths'] = row['stats']['deaths']
     participants_row['Assists'] = row['stats']['assists']
     participants_row['Damage'] = row['stats']['totalDamageDealt']
-    participants_row['Gold'] = row['stats']['goldEarned']
+    # participants_row['Gold'] = row['stats']['goldEarned']
     # participants_row['champLevel'] = row['stats']['champLevel']
-    participants_row['Minions'] = row['stats']['totalMinionsKilled']
+    # participants_row['Minions'] = row['stats']['totalMinionsKilled']
     # participants_row['item0'] = row['stats']['item0']
     # participants_row['item1'] = row['stats']['item1']
     participants.append(participants_row)
   df = pd.DataFrame(participants)
   return df
+  
 
+      

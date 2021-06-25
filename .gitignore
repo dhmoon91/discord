@@ -3,3 +3,5 @@ node_modules
 df_styled.png
 .env
 **/__pycache__
+last_match.html
+df_style.css
