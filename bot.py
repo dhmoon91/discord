@@ -21,7 +21,6 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"), intents=intents)
 
 
-
 @bot.event
 async def on_ready():
     print(f"{bot.user.name} has connected to Discord!")
@@ -37,7 +36,6 @@ async def on_member_join(member):
 
 @bot.command(name="rank", help="Get rank of summoner")
 async def get_rank(ctx, name: str):
-<<<<<<< HEAD
     summoner_info = getSummonerRank(name)
 
     embed = discord.Embed(title="Solo/Duo Rank", color=discord.Color.dark_gray())
@@ -74,10 +72,6 @@ async def get_rank(ctx, name: str):
         inline=False,
     )
     await ctx.send(file=file, embed=embed)
-=======
-    embed = discord.Embed(title="Rank", description=getSummonerRank(name))
-    await ctx.send(embed=embed)
->>>>>>> master
 
 
 @bot.command(name="last_match", help="Get last match history")
@@ -88,10 +82,7 @@ async def get_last_match(ctx, name: str):
     embed = discord.Embed()
     embed.set_image(url="attachment://df_styled.png")
     await ctx.send(embed=embed, file=file)
-<<<<<<< HEAD
     os.remove("df_styled.png")
-=======
->>>>>>> master
 
 
 @bot.event
