@@ -12,6 +12,20 @@ DISCORD_TOKEN={TOKEN}
    ` pip3 install -r requirements.txt`
 4. Run `npx nodemon --exec python3 bot.py`
 5. IF ^ fails, `python3 bot-main.py`
+6. We use `black` as auto formatter.
+
+- Install `black`; pip3 install black
+- Set `Python › Formatting: Provider` in vscode setting to be `black`.
+- **If you have prettier setup, you have to override it**:
+  - Open language specific setting in vscode for python(CMD + SHIFT + P)
+  - Add this line in
+  ```
+  [python]:{
+     ...
+      "editor.defaultFormatter": "ms-python.python"
+  }
+  ```
+- This will set up auto formatting upon saving a file.
 
 ## Packages:
 

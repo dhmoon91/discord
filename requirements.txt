@@ -5,3 +5,4 @@ pydash
 pandas
 riotwatcher
 dataframe_image
+black
