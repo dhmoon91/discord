@@ -1,5 +1,4 @@
 node_modules
 .vscode/
-df_styled.png
 .env
 **/__pycache__
