@@ -11,12 +11,6 @@ from riot import getSummonerRank, previousMatch
 # saving df to image
 import dataframe_image as dfi
 
-dict = {
-    "user": 123,
-    "test": 123,
-}
-
-
 intents = discord.Intents.default()
 intents.members = True  # Subscribe to the privileged members intent.
 
