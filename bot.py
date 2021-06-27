@@ -6,7 +6,7 @@ import discord
 from discord.ext import commands
 
 # Riot util func.
-from riot import getSummonerRank, previousMatch
+from riot import get_summoner_rank, previous_match
 
 # saving df to image
 import dataframe_image as dfi
@@ -17,17 +17,19 @@ intents.members = True  # Subscribe to the privileged members intent.
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 
-# TODO: Update prefix to be called with bot name.
+# Update prefix to be called with bot name.
 bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"), intents=intents)
 
 
 @bot.event
 async def on_ready():
+    """Prints that the bot is connected"""
     print(f"{bot.user.name} has connected to Discord!")
 
 
 @bot.event
 async def on_member_join(member):
+    """Sends personal discord message to the membed who join"""
     # create a direct message channel.
     await member.create_dm()
     # Send welcome msg.
@@ -36,7 +38,8 @@ async def on_member_join(member):
 
 @bot.command(name="rank", help="Get rank of summoner")
 async def get_rank(ctx, name: str):
-    summoner_info = getSummonerRank(name)
+    """Sends the summoner's rank information to the bot"""
+    summoner_info = get_summoner_rank(name)
 
     embed = discord.Embed(title="Solo/Duo Rank", color=discord.Color.dark_gray())
 
@@ -68,7 +71,8 @@ async def get_rank(ctx, name: str):
 
     embed.add_field(
         name=summoner_rank,
-        value=f"Total Games Played: {summoner_total_game}\n{solo_win}W {solo_loss}L {solo_rank_percentage}%",
+        value=f"Total Games Played: \
+        {summoner_total_game}\n{solo_win}W {solo_loss}L {solo_rank_percentage}%",
         inline=False,
     )
     await ctx.send(file=file, embed=embed)
@@ -76,8 +80,9 @@ async def get_rank(ctx, name: str):
 
 @bot.command(name="last_match", help="Get last match history")
 async def get_last_match(ctx, name: str):
-    df = previousMatch(name)
-    dfi.export(df, "df_styled.png")
+    """Sends the summoner's last match information to the bot"""
+    last_match_info = previous_match(name)
+    dfi.export(last_match_info, "df_styled.png")
     file = discord.File("df_styled.png")
     embed = discord.Embed()
     embed.set_image(url="attachment://df_styled.png")
@@ -87,6 +92,7 @@ async def get_last_match(ctx, name: str):
 
 @bot.event
 async def on_command_error(ctx, error):
+    """Checks error and sends error message if exists"""
     if isinstance(error, commands.errors.CheckFailure):
         await ctx.send("You do not have the correct role for this command.")
 
