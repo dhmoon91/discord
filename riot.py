@@ -35,7 +35,7 @@ def get_summoner_rank(name: str):
     version = watcher.data_dragon.versions_for_region(MY_REGION)["v"]
     summoner_icon_image_url = (
         "http://ddragon.leagueoflegends.com/"
-        + +f"cdn/{version}/img/profileicon/{profileiconid}.png"
+        + f"cdn/{version}/img/profileicon/{profileiconid}.png"
     )
 
     user_name = user["name"]
