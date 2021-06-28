@@ -1,3 +1,8 @@
+"""
+Data processing the data from riot API
+"""
+
+
 import os
 from riotwatcher import LolWatcher
 import pandas as pd
@@ -28,8 +33,10 @@ def get_summoner_rank(name: str):
     # Get summoner Icon Image
     profileiconid = user["profileIconId"]
     version = watcher.data_dragon.versions_for_region(MY_REGION)["v"]
-    summoner_icon_image_url = f"http://ddragon.leagueoflegends.com/ \
-      cdn/{version}/img/profileicon/{profileiconid}.png"
+    summoner_icon_image_url = (
+        "http://ddragon.leagueoflegends.com/"
+        + +f"cdn/{version}/img/profileicon/{profileiconid}.png"
+    )
 
     user_name = user["name"]
 
@@ -82,10 +89,10 @@ def previous_match(name: str):
         participants_row = {}
         # Get summoner name
         pid = row["participantId"]
-        summonerInfo = pydash.find(
+        summoner_info = pydash.find(
             match_detail["participantIdentities"], {"participantId": pid}
         )
-        participants_row["Name"] = summonerInfo["player"]["summonerName"]
+        participants_row["Name"] = summoner_info["player"]["summonerName"]
         participants_row["Champion"] = champ_dict[str(row["championId"])]
         # participants_row['spell1'] = row['spell1Id']
         # participants_row['spell2'] = row['spell2Id']

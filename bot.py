@@ -1,5 +1,13 @@
+"""
+Bot codes
+"""
+
+
 import os
 from dotenv import load_dotenv
+
+# saving df to image
+import dataframe_image as dfi
 
 # Discord
 import discord
@@ -8,9 +16,6 @@ from discord.ext import commands
 # Riot util func.
 from riot import get_summoner_rank, previous_match
 
-# saving df to image
-import dataframe_image as dfi
-
 intents = discord.Intents.default()
 intents.members = True  # Subscribe to the privileged members intent.
 
@@ -18,7 +23,7 @@ load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 # Update prefix to be called with bot name.
-bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"), intents=intents)
+bot = commands.Bot(command_prefix=commands.when_mentioned, intents=intents)
 
 
 @bot.event
@@ -47,6 +52,7 @@ async def get_rank(ctx, name: str):
 
     # Removing space of the summoner name to access op.gg url of the summoner
     summoner_name_opgg = summoner_name.replace(" ", "")
+    print(summoner_info["summoner_icon_image_url"])
     # Add author, thumbnail, fields, and footer to the embed
     embed.set_author(
         name=summoner_name,
@@ -71,8 +77,7 @@ async def get_rank(ctx, name: str):
 
     embed.add_field(
         name=summoner_rank,
-        value=f"Total Games Played: \
-        {summoner_total_game}\n{solo_win}W {solo_loss}L {solo_rank_percentage}%",
+        value=f"Total Games Played: {summoner_total_game}\n{solo_win}W {solo_loss}L {solo_rank_percentage}%",
         inline=False,
     )
     await ctx.send(file=file, embed=embed)
