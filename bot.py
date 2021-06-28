@@ -21,9 +21,12 @@ intents.members = True  # Subscribe to the privileged members intent.
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
+LOCAL_PREFIX = os.getenv("LOCAL_PREFIX")
 
 # Update prefix to be called with bot name.
-bot = commands.Bot(command_prefix=commands.when_mentioned, intents=intents)
+bot = commands.Bot(
+    command_prefix=commands.when_mentioned_or(LOCAL_PREFIX), intents=intents
+)
 
 
 @bot.event
