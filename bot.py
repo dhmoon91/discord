@@ -45,7 +45,7 @@ async def on_member_join(member):
 async def get_rank(ctx, name: str):
     """Sends the summoner's rank information to the bot"""
     summoner_info = get_summoner_rank(name)
-
+    print("test")
     embed = discord.Embed(title="Solo/Duo Rank", color=discord.Color.dark_gray())
 
     summoner_name = summoner_info["user_name"]
