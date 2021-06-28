@@ -46,7 +46,6 @@ async def get_rank(ctx, name: str):
     """Sends the summoner's rank information to the bot"""
     summoner_info = get_summoner_rank(name)
 
-    print(summoner_info)
     embed = discord.Embed(title="Solo/Duo Rank", color=discord.Color.dark_gray())
 
     summoner_name = summoner_info["user_name"]
@@ -78,7 +77,7 @@ async def get_rank(ctx, name: str):
 
     embed.add_field(
         name=summoner_rank,
-        value=f"Total Games Played:"
+        value="Total Games Played:"
         + f"{summoner_total_game}\n{solo_win}W \
           {solo_loss}L {solo_rank_percentage}%",
         inline=False,
