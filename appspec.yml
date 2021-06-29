@@ -4,6 +4,11 @@ files:
   - source: .
     destination: /home/ubuntu/discord/
 hooks:
+  BeforeInstall:
+    - location: scripts/kill.sh
+    - location: scripts/cleanup.sh
+      timeout: 300
+      runas: root
   AfterInstall:
     - location: scripts/setup.sh
       timeout: 300
