@@ -8,13 +8,13 @@ hooks:
     - location: scripts/kill.sh
     - location: scripts/cleanup.sh
       timeout: 300
-      runas: root
+      runas: ubuntu
   AfterInstall:
     - location: scripts/change_permissions.sh
       timeout: 300
-      runas: root
+      runas: ubuntu
   ApplicationStart:
     - location: scripts/setup.sh
     - location: scripts/start.sh
       timeout: 300
-      runas: root
+      runas: ubuntu
