@@ -14,7 +14,7 @@ import discord
 from discord.ext import commands
 
 # Riot util func.
-from riot import get_summoner_rank, previous_match
+from riot import get_summoner_rank, previous_match, create_summoner_list
 
 intents = discord.Intents.default()
 intents.members = True  # Subscribe to the privileged members intent.
@@ -54,7 +54,7 @@ async def get_rank(ctx, name: str):
 
     # Removing space of the summoner name to access op.gg url of the summoner
     summoner_name_opgg = summoner_name.replace(" ", "")
-    print(summoner_info["summoner_icon_image_url"])
+
     # Add author, thumbnail, fields, and footer to the embed
     embed.set_author(
         name=summoner_name,
@@ -97,6 +97,46 @@ async def get_last_match(ctx, name: str):
     embed.set_image(url="attachment://df_styled.png")
     await ctx.send(embed=embed, file=file)
     os.remove("df_styled.png")
+
+
+@bot.command(name="add", help="Add the players to the list")
+async def add_summoner(ctx, *, message):
+
+    data_path = "data"
+    data_file = "/inhouse_members.json"
+
+    players_list = message.split(", ")
+    players_list_info = create_summoner_list(players_list)
+
+    if len(players_list) != 10:
+        await ctx.send(
+            f"You have just added {len(players_list)} number of players.\n"
+            + f"You need to add {10 - len(players_list)} more!"
+        )
+
+    if not os.path.exists(data_path + data_file):
+        pass
+    else:
+        pass
+
+    embed = discord.Embed(title="List of Summoners", color=discord.Color.dark_gray())
+
+    for count in range(len(players_list)):
+
+        output_info = {
+            "name": players_list_info["members"][count]["user_name"],
+            "tier_accronym": players_list_info["members"][count]["tier_division"][0]
+            + players_list_info["members"][count]["tier_rank_number"],
+        }
+
+        players_list_info["members"][count]["user_name"]
+        embed.add_field(
+            name="** **",
+            value=output_info["tier_accronym"] + " " + output_info["name"],
+            inline=False,
+        )
+
+    await ctx.send(embed=embed)
 
 
 @bot.event

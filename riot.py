@@ -109,3 +109,38 @@ def previous_match(name: str):
         participants.append(participants_row)
     last_match_info = pd.DataFrame(participants)
     return last_match_info
+
+
+def create_summoner_list(players_list: list, discord_channel_id=1):
+
+    members_to_add = {
+        "discord_channel_id": discord_channel_id,
+        "members": [],
+    }
+
+    for summoner in players_list:
+        user = watcher.summoner.by_name(MY_REGION, summoner)
+        user_name = user["name"]
+
+        ranked_stat = watcher.league.by_summoner(MY_REGION, user["id"])
+        solo_rank_stat = pydash.find(ranked_stat, {"queueType": "RANKED_SOLO_5x5"})
+
+        tier_division = solo_rank_stat["tier"]
+        tier_rank = solo_rank_stat["rank"]
+
+        tier_rank_map = {"I": "1", "II": "2", "III": "3", "IV": "4"}
+
+        tier_rank_number = tier_rank_map.get(tier_rank)
+
+        tier = " ".join([tier_division, tier_rank])
+
+        members_to_add["members"].append(
+            {
+                "user_name": user_name,
+                "tier_division": tier_division,
+                "tier_rank_number": tier_rank_number,
+                "tier": tier,
+            }
+        )
+
+    return members_to_add
