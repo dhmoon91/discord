@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Deploy to staging.
+name: Deploy to staging
 
 # Controls when the workflow will run
 on:
@@ -11,7 +11,7 @@ on:
   #   branches: [ master ]
 
   # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+  # workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -30,21 +30,20 @@ jobs:
         with:
           # Version range or exact version of a Python version to use, using SemVer's version range syntax.
           python-version: 3.9
-          
-      -name: Install dependencies
+
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install pylint
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       # S3 Sync
-      -name: S3 Sync
+      - name: S3 Sync
         uses: jakejarvis/s3-sync-action@v0.5.1
-        with: 
-          args --acl public-read --delete
+        with: args --acl public-read --delete
         env:
           AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }
-          AWS_REGION: 'us-east-2'
-          SOURCe_DIR: 'dist'
+          AWS_REGION: "us-east-2"
+          SOURCe_DIR: "dist"
