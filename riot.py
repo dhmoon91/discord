@@ -7,7 +7,7 @@ import os
 from riotwatcher import LolWatcher
 import pandas as pd
 import pydash
-
+import json
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -144,3 +144,15 @@ def create_summoner_list(players_list: list, discord_channel_id=1):
         )
 
     return members_to_add
+
+    # function to add to JSON
+
+
+def write_json(new_data, filename="data.json"):
+    with open(filename, "r+") as file:
+        # First we load existing data into a dict.
+        file_data = json.load(file)
+        # Join new_dat3a with file_data
+        file_data.update(new_data)
+        # convert back to json.
+        json.dump(file_data, file, indent=4)

@@ -7,3 +7,4 @@ riotwatcher
 dataframe_image
 black
 pylint
+json

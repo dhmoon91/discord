@@ -14,7 +14,9 @@ import discord
 from discord.ext import commands
 
 # Riot util func.
-from riot import get_summoner_rank, previous_match, create_summoner_list
+from riot import get_summoner_rank, previous_match, create_summoner_list, write_json
+
+import json
 
 intents = discord.Intents.default()
 intents.members = True  # Subscribe to the privileged members intent.
@@ -102,8 +104,9 @@ async def get_last_match(ctx, name: str):
 @bot.command(name="add", help="Add the players to the list")
 async def add_summoner(ctx, *, message):
 
-    data_path = "data"
-    data_file = "/inhouse_members.json"
+    data_path = "data/"
+    data_file = "inhouse_members.json"
+    json_path = os.path.join(data_path, data_file)
 
     players_list = message.split(", ")
     players_list_info = create_summoner_list(players_list)
@@ -114,27 +117,36 @@ async def add_summoner(ctx, *, message):
             + f"You need to add {10 - len(players_list)} more!"
         )
 
-    if not os.path.exists(data_path + data_file):
-        pass
+    # print(type(players_list_info))
+
+    if not os.path.isfile(json_path):
+        with open(json_path, "w") as f:
+            json.dump(players_list_info, f, indent=4)
     else:
-        pass
+        print(players_list_info)
+
+        write_json(players_list_info, json_path)
 
     embed = discord.Embed(title="List of Summoners", color=discord.Color.dark_gray())
 
+    output_str = ""
+
     for count in range(len(players_list)):
 
-        output_info = {
-            "name": players_list_info["members"][count]["user_name"],
-            "tier_accronym": players_list_info["members"][count]["tier_division"][0]
-            + players_list_info["members"][count]["tier_rank_number"],
-        }
-
-        players_list_info["members"][count]["user_name"]
-        embed.add_field(
-            name="** **",
-            value=output_info["tier_accronym"] + " " + output_info["name"],
-            inline=False,
+        output_str += (
+            "`"
+            + players_list_info["members"][count]["tier_division"][0]
+            + players_list_info["members"][count]["tier_rank_number"]
+            + "` "
+            + players_list_info["members"][count]["user_name"]
+            + "\n"
         )
+
+    embed.add_field(
+        name="Summoners",
+        value=output_str,
+        inline=False,
+    )
 
     await ctx.send(embed=embed)
 
