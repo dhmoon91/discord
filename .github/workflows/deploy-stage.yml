@@ -47,8 +47,8 @@ jobs:
 
   # Deploy
   deploy:
-    runs-on: ubuntu-latest
     needs: build
+    runs-on: ubuntu-latest
 
     if: github.ref == 'refs/heads/main'
     steps:

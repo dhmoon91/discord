@@ -45,7 +45,6 @@ async def on_member_join(member):
 
 @bot.command(name="rank", help="Get rank of summoner")
 async def get_rank(ctx, name: str):
-    print(name)
     """Sends the summoner's rank information to the bot"""
     summoner_info = get_summoner_rank(name)
 
