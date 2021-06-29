@@ -27,6 +27,10 @@ DISCORD_TOKEN={TOKEN}
   ```
 - This will set up auto formatting upon saving a file.
 
+7. To call the bot with the desired prefix locally, 
+
+- Add `LOCAL_BOT_PREFIX= ""` to .env with desired prefix between the double quotes
+
 ## Packages:
 
 **Pydash**
