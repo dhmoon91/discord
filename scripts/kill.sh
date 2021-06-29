@@ -1,4 +1,2 @@
 #!/bin/bash
-cd /home/ubuntu/discord
-kill -9 `cat save_pid.txt`
-rm save_pid.txt
+test -f /home/ubuntu/discord/save_pid.txt && kill -9 `cat save_pid.txt` || echo "File doesn't exists"
