@@ -43,6 +43,126 @@ async def on_member_join(member):
     await member.dm_channel.send(f"Hi {member.name}, welcome to 관전남 월드!")
 
 
+# TODO: Issues #5 help command.
+# remove default help command to use our help command
+bot.remove_command("help")
+
+# Custom help command
+@bot.command(name="help", help="This is help command")
+async def help(ctx):
+    # Create to display help command in embedded format
+    helpEmbed = discord.Embed(
+        title=f"How to use {bot.user.name}",
+        description=f"<@!{bot.user.id}> <command>",
+        color=discord.Color.gold(),
+    )
+
+    # ADD author to embed (URL and Image can be changed whatever we want eg.our website and logo)
+    # helpEmbed.set_author(
+    #     name=f"{bot.user.name}",
+    #     icon_url="https://i.imgur.com/KE9LBHL.png",
+    # )
+
+    # ADD thumbnail (Image can be changed whatever we want. eg.our logo)
+    helpEmbed.set_thumbnail(url="https://emoji.gg/assets/emoji/3907_lol.png")
+
+    # ADD fields
+    # helpEmbed.add_field(name="How to mention", value=f"<@!{bot.user.id}>", inline=False)
+    # helpEmbed.add_field(
+    #     name="** **", value="** **", inline=False
+    # )  # This line for line spacing
+
+    # helpEmbed.add_field(
+    #     name="** **",
+    #     value=f"<@!{bot.user.id}> <command>",
+    #     inline=False,
+    # )
+
+    helpEmbed.add_field(
+        name="** **",
+        value="**The list of command examples**",
+        inline=False,
+    )
+
+    helpEmbed.add_field(
+        name="** **",
+        value=f"`1.{help.name}` \n {help.help}",
+        inline=False,
+    )
+
+    # Add empty field to keep formatting neat (1 per 2 fields)
+    # helpEmbed.add_field(name="\b", value="\b", inline=True)
+
+    helpEmbed.add_field(
+        name="** **",
+        value=f"`2.{get_command_description.name}` \n {get_command_description.help}",
+        inline=False,
+    )
+
+    helpEmbed.add_field(
+        name="** **",
+        value=f"`3.{get_rank.name} [userID]` \n {get_rank.help}",
+        inline=False,
+    )
+
+    # helpEmbed.add_field(name="\b", value="\b", inline=True)
+
+    helpEmbed.add_field(
+        name="** **",
+        value=f"`4.{get_last_match.name} [userID]` \n {get_last_match.help}",
+        inline=False,
+    )
+
+    # ADD footer with line spacing
+    # helpEmbed.add_field(name="\u200B", value="\u200B", inline=False)
+    # helpEmbed.set_footer(
+    #     text="This is footer:{}".format(bot.user.name),
+    #     icon_url="https://i.imgur.com/KE9LBHL.png",
+    # )
+    await ctx.send(embed=helpEmbed)
+
+
+# Create commands command for a description of all of the commands
+@bot.command(name="commands", help="Description of all of the commands")
+async def get_command_description(ctx):
+    embed = discord.Embed(
+        title="All of the commands",
+        description="Detailed explanation of each command",
+        color=discord.Color.dark_teal(),
+    )
+    embed.add_field(name="** **", value="** **", inline=False)
+
+    embed.add_field(
+        name=f"`{help.name}`",
+        value=f"**Description** : {help.help}\n **Syntax** : ```@{bot.user.name} {help.name}```",
+        inline=False,
+    )
+    embed.add_field(name="** **", value="** **", inline=False)
+
+    embed.add_field(
+        name=f"`{get_command_description.name}`",
+        value=f"**Description** : {get_command_description.help}\n **Syntax** : ```@{bot.user.name} {get_command_description.name}```",
+        inline=False,
+    )
+    embed.add_field(name="** **", value="** **", inline=False)
+
+    embed.add_field(
+        name=f"`{get_rank.name}`",
+        value=f"**Description** : {get_rank.help}\n **Syntax** : ```@{bot.user.name} {get_rank.name} [userID]```",
+        inline=False,
+    )
+    embed.add_field(name="** **", value="** **", inline=False)
+
+    embed.add_field(
+        name=f"`{get_last_match.name}`",
+        value=f"**Description** : {get_last_match.help}\n **Syntax** : ```@{bot.user.name} {get_last_match.name} [userID]```",
+        inline=False,
+    )
+    embed.add_field(name="** **", value="** **", inline=False)
+
+    await ctx.send(embed=embed)
+
+
 @bot.command(name="rank", help="Get rank of summoner")
 async def get_rank(ctx, name: str):
     """Sends the summoner's rank information to the bot"""
