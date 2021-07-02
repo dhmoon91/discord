@@ -88,8 +88,9 @@ async def get_rank(ctx, name: str):
             inline=False,
         )
         await ctx.send(file=file, embed=embed)
-    except Exception as e:
-        print(e)
+        # pylint: disable=broad-except
+    except Exception as e_values:
+        print(e_values)
 
 
 @bot.command(name="last_match", help="Get last match history")
@@ -103,8 +104,9 @@ async def get_last_match(ctx, name: str):
         embed.set_image(url="attachment://df_styled.png")
         await ctx.send(embed=embed, file=file)
         os.remove("df_styled.png")
-    except Exception as e:
-        print(e)
+        # pylint: disable=broad-except
+    except Exception as e_values:
+        print(e_values)
 
 
 @bot.event
