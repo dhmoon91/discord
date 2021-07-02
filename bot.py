@@ -86,7 +86,6 @@ async def help_command(ctx):
                 inline=False,
             )
 
-    help_embed.set_footer(text="All Data from NA server")
     await ctx.send(embed=help_embed)
 
 
