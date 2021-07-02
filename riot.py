@@ -49,7 +49,7 @@ def get_summoner_rank(name: str):
     tier_rank = solo_rank_stat["rank"]
     tier = " ".join([tier_division, tier_rank])
 
-    emblemPath = getFilePath(f"ranked-emblems/Emblem_{tier_division}.png")
+    emblemPath = getFilePath(f"ranked-emblems/Emblem_{tier_division.capitalize()}.png")
     print(emblemPath)
     summoner_profile = {
         "user_name": user_name,
