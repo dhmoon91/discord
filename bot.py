@@ -48,10 +48,13 @@ async def on_member_join(member):
 bot.remove_command("help")
 
 # Custom help command
-@bot.command(name="help", help="This is help command")
+@bot.command(
+    name="help",
+    help="Displays the syntax and the description of all the commands.",
+)
 async def help_command(ctx):
     """Help command outputs description about all the commands"""
-    # Create to display help command in embedded format
+
     help_embed = discord.Embed(
         title=f"How to use {bot.user.name}",
         description=f"<@!{bot.user.id}> <command>",
@@ -75,23 +78,19 @@ async def help_command(ctx):
         inline=False,
     )
 
-    help_embed.add_field(
-        name="** **",
-        value=f"<@!{bot.user.id}> **{get_rank.name} [summoner name]** \n {get_rank.help}",
-        inline=False,
-    )
-
-    help_embed.add_field(
-        name="** **",
-        value=f"<@!{bot.user.id}> **{get_last_match.name} [summoner name]** \n \
-         {get_last_match.help}",
-        inline=False,
-    )
-
+    for command in bot.commands:
+        if not str(command).startswith("help"):
+            help_embed.add_field(
+                name="** **",
+                value=f"<@!{bot.user.id}> **{command.name} summoner name** \n {command.help}",
+                inline=False,
+            )
+    help_embed.add_field(name="** **", value="** **", inline=False)
+    help_embed.set_footer(text="Date from NA server")
     await ctx.send(embed=help_embed)
 
 
-@bot.command(name="rank", help="Get rank of summoner")
+@bot.command(name="rank", help="Displays the information about the summoner.")
 async def get_rank(ctx, name: str):
     """Sends the summoner's rank information to the bot"""
     summoner_info = get_summoner_rank(name)
@@ -135,7 +134,10 @@ async def get_rank(ctx, name: str):
     await ctx.send(file=file, embed=embed)
 
 
-@bot.command(name="last_match", help="Get last match history")
+@bot.command(
+    name="last_match",
+    help="Displays the information about the latest game of the summoner.",
+)
 async def get_last_match(ctx, name: str):
     """Sends the summoner's last match information to the bot"""
     last_match_info = previous_match(name)
