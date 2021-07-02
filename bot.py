@@ -19,6 +19,7 @@ from riot import get_summoner_rank, previous_match, create_summoner_list
 
 
 intents = discord.Intents.default()
+# pylint: disable=assigning-non-slot
 intents.members = True  # Subscribe to the privileged members intent.
 
 load_dotenv()
