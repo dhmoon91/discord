@@ -57,7 +57,7 @@ async def help_command(ctx):
 
     help_embed = discord.Embed(
         title=f"How to use {bot.user.name}",
-        description=f"<@!{bot.user.id}> <command>",
+        description=f"`All Data from NA server`\n\n <@!{bot.user.id}> <command>",
         color=discord.Color.gold(),
     )
 
@@ -85,8 +85,8 @@ async def help_command(ctx):
                 value=f"<@!{bot.user.id}> **{command.name} summoner name** \n {command.help}",
                 inline=False,
             )
-    help_embed.add_field(name="** **", value="** **", inline=False)
-    help_embed.set_footer(text="Date from NA server")
+
+    help_embed.set_footer(text="All Data from NA server")
     await ctx.send(embed=help_embed)
 
 
