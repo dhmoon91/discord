@@ -6,6 +6,7 @@ Bot codes
 import os
 from dotenv import load_dotenv
 
+
 # saving df to image
 import dataframe_image as dfi
 
@@ -55,7 +56,7 @@ async def get_rank(ctx, name: str):
 
         # Removing space of the summoner name to access op.gg url of the summoner
         summoner_name_opgg = summoner_name.replace(" ", "")
-        print(summoner_info["summoner_icon_image_url"])
+
         # Add author, thumbnail, fields, and footer to the embed
         embed.set_author(
             name=summoner_name,
@@ -67,6 +68,7 @@ async def get_rank(ctx, name: str):
         tier_image = summoner_info["tier_image"]
         file = discord.File(tier_image)
         # Need to get the filename in order to attach to the thumbnail
+
         tier_image_filename = tier_image.replace("ranked-emblems/", "")
         # Embed thumbnail image of tier at the side of the embed
         embed.set_thumbnail(url=f"attachment://{tier_image_filename}")
@@ -93,13 +95,16 @@ async def get_rank(ctx, name: str):
 @bot.command(name="last_match", help="Get last match history")
 async def get_last_match(ctx, name: str):
     """Sends the summoner's last match information to the bot"""
-    last_match_info = previous_match(name)
-    dfi.export(last_match_info, "df_styled.png")
-    file = discord.File("df_styled.png")
-    embed = discord.Embed()
-    embed.set_image(url="attachment://df_styled.png")
-    await ctx.send(embed=embed, file=file)
-    os.remove("df_styled.png")
+    try:
+        last_match_info = previous_match(name)
+        dfi.export(last_match_info, "df_styled.png")
+        file = discord.File("df_styled.png")
+        embed = discord.Embed()
+        embed.set_image(url="attachment://df_styled.png")
+        await ctx.send(embed=embed, file=file)
+        os.remove("df_styled.png")
+    except Exception as e:
+        print(e)
 
 
 @bot.event

@@ -10,6 +10,8 @@ import pydash
 
 from dotenv import load_dotenv
 
+from utils import getFilePath
+
 load_dotenv()
 RIOTAPIKEY = os.getenv("RIOT_API_KEY")
 
@@ -47,11 +49,13 @@ def get_summoner_rank(name: str):
     tier_rank = solo_rank_stat["rank"]
     tier = " ".join([tier_division, tier_rank])
 
+    emblemPath = getFilePath(f"ranked-emblems/Emblem_{tier_division}.png")
+    print(emblemPath)
     summoner_profile = {
         "user_name": user_name,
         "summoner_icon_image_url": summoner_icon_image_url,
         "summoner_level": user["summonerLevel"],
-        "tier_image": f"ranked-emblems/Emblem_{tier_division}.png",
+        "tier_image": emblemPath,
         "tier": tier,
         "solo_win": solo_rank_stat["wins"],
         "solo_loss": solo_rank_stat["losses"],
