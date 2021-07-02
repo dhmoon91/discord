@@ -4,6 +4,7 @@ Bot codes
 
 
 import os
+from discord.ext.commands.core import command
 from dotenv import load_dotenv
 
 # saving df to image
@@ -14,7 +15,8 @@ import discord
 from discord.ext import commands
 
 # Riot util func.
-from riot import get_summoner_rank, previous_match
+from riot import get_summoner_rank, previous_match, get_help_command
+
 
 intents = discord.Intents.default()
 intents.members = True  # Subscribe to the privileged members intent.
@@ -24,7 +26,9 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 LOCAL_BOT_PREFIX = os.getenv("LOCAL_BOT_PREFIX")
 
 bot = commands.Bot(
-    command_prefix=commands.when_mentioned_or(LOCAL_BOT_PREFIX), intents=intents
+    command_prefix=commands.when_mentioned_or(LOCAL_BOT_PREFIX),
+    intents=intents,
+    help_command=None,
 )
 
 
@@ -46,20 +50,31 @@ async def on_member_join(member):
 # NO Matching command #7
 @bot.event
 async def on_command_error(ctx, error):
+    print("check")
     if isinstance(error, commands.CommandNotFound):
         msg = str(error).split('"')
         msg = msg[1]
+        print(msg)
 
         errembed = discord.Embed(
-            title="⚠️ No Matching Command!",
+            title="⚠️ No Matching Command !",
             description=f"`{msg}`  was invoked incorrectly.\n Please type  `help`  to see how to use",
             color=discord.Color.red(),
         )
 
-        test = helpCommand(bot)
+        help_embed = get_help_command(bot)
 
         await ctx.send(embed=errembed)
-        await ctx.send(embed=test)
+        await ctx.send(embed=help_embed)
+
+
+@bot.command(name="help", help="This is help command")
+async def help_command(ctx):
+    """Help command outputs description about all the commands"""
+
+    help_embed = get_help_command(bot)
+
+    await ctx.send(embed=help_embed)
 
 
 @bot.command(name="rank", help="Get rank of summoner")
