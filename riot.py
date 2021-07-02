@@ -7,8 +7,8 @@ import os
 from riotwatcher import LolWatcher
 import pandas as pd
 import pydash
-import json
 from dotenv import load_dotenv
+import requests
 
 load_dotenv()
 RIOTAPIKEY = os.getenv("RIOT_API_KEY")
@@ -111,30 +111,60 @@ def previous_match(name: str):
     return last_match_info
 
 
-def create_summoner_list(players_list: list, discord_channel_id=1):
+def create_summoner_list(players_list: list, server_id: str):
+    """Gets the list of summoners and returns the information abou the summoners
+    Parameters:
+    players_list (list): list of summoner names
+    server_id (int): discord server id
 
+    Returns:
+    members_to_add (dict): summoner's latest match information
+
+    """
+
+    # dictionary for data input
     members_to_add = {
-        "discord_channel_id": discord_channel_id,
-        "members": [],
+        server_id: [],
     }
 
+    # accessing each player
     for summoner in players_list:
-        user = watcher.summoner.by_name(MY_REGION, summoner)
+
+        # check whether the summoner exists in API
+        try:
+            user = watcher.summoner.by_name(MY_REGION, summoner)
+        except requests.exceptions.HTTPError:
+            user = "ERROR"
+
+        # return error message if no summoner was found in API
+        if user == "ERROR":
+            return f"Invalid Summoner Name: {summoner}!"
+
         user_name = user["name"]
 
         ranked_stat = watcher.league.by_summoner(MY_REGION, user["id"])
-        solo_rank_stat = pydash.find(ranked_stat, {"queueType": "RANKED_SOLO_5x5"})
 
-        tier_division = solo_rank_stat["tier"]
-        tier_rank = solo_rank_stat["rank"]
+        # check if there is any rank data on user as unranked players don't have any data on ranked
+        if len(ranked_stat) > 0:
 
-        tier_rank_map = {"I": "1", "II": "2", "III": "3", "IV": "4"}
+            solo_rank_stat = pydash.find(ranked_stat, {"queueType": "RANKED_SOLO_5x5"})
 
-        tier_rank_number = tier_rank_map.get(tier_rank)
+            tier_division = solo_rank_stat["tier"]
+            tier_rank = solo_rank_stat["rank"]
 
-        tier = " ".join([tier_division, tier_rank])
+            tier_rank_map = {"I": "1", "II": "2", "III": "3", "IV": "4"}
 
-        members_to_add["members"].append(
+            tier_rank_number = tier_rank_map.get(tier_rank)
+
+            tier = " ".join([tier_division, tier_rank])
+
+        # set the tier to unranked if no ranked data was found
+        else:
+            tier_division = "UNRANKED"
+            tier_rank_number = "R"
+            tier = "UNRANKED"
+
+        members_to_add[server_id].append(
             {
                 "user_name": user_name,
                 "tier_division": tier_division,
@@ -144,15 +174,3 @@ def create_summoner_list(players_list: list, discord_channel_id=1):
         )
 
     return members_to_add
-
-    # function to add to JSON
-
-
-def write_json(new_data, filename="data.json"):
-    with open(filename, "r+") as file:
-        # First we load existing data into a dict.
-        file_data = json.load(file)
-        # Join new_dat3a with file_data
-        file_data.update(new_data)
-        # convert back to json.
-        json.dump(file_data, file, indent=4)

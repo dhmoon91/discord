@@ -4,6 +4,7 @@ Bot codes
 
 
 import os
+import json
 from dotenv import load_dotenv
 
 # saving df to image
@@ -14,9 +15,8 @@ import discord
 from discord.ext import commands
 
 # Riot util func.
-from riot import get_summoner_rank, previous_match, create_summoner_list, write_json
+from riot import get_summoner_rank, previous_match, create_summoner_list
 
-import json
 
 intents = discord.Intents.default()
 intents.members = True  # Subscribe to the privileged members intent.
@@ -103,42 +103,83 @@ async def get_last_match(ctx, name: str):
 
 @bot.command(name="add", help="Add the players to the list")
 async def add_summoner(ctx, *, message):
+    """Writes list of summoners to local
+    json file and sends the list to the bot"""
 
-    data_path = "data/"
-    data_file = "inhouse_members.json"
-    json_path = os.path.join(data_path, data_file)
+    json_path = "data/data.json"
 
-    players_list = message.split(", ")
-    players_list_info = create_summoner_list(players_list)
+    # accepting comma, space and comma plus space
+    players_list = [x.strip() for x in message.replace(" ", ",").split(",")]
+    players_list = list(filter(None, players_list))
 
-    if len(players_list) != 10:
-        await ctx.send(
-            f"You have just added {len(players_list)} number of players.\n"
-            + f"You need to add {10 - len(players_list)} more!"
-        )
+    file_data = ""
 
-    # print(type(players_list_info))
+    # initializing number of players to display
+    number_of_players = 0
 
-    if not os.path.isfile(json_path):
-        with open(json_path, "w") as f:
-            json.dump(players_list_info, f, indent=4)
+    server_id = str(ctx.guild.id)
+
+    # storing the json file into a variable
+    if os.path.getsize(json_path) > 0:
+        with open(json_path, "r") as file:
+            file_data = json.load(file)
+
+        # if server id exist in json, add number of players
+        if server_id in file_data:
+            number_of_players += len(file_data[server_id])
+
+    # make dictionary for newly coming in players
+    players_list_info = create_summoner_list(players_list, server_id)
+
+    # if there is an error with the summoner's name, send error message to bot
+    if isinstance(players_list_info, str):
+        await ctx.send(players_list_info)
+        return None
+
+    # remove any players that exists within the existing data
+    if os.path.getsize(json_path) > 0 and server_id in file_data:
+        for i in range(len(players_list_info[server_id])):
+            if players_list_info[server_id][i] in file_data[server_id]:
+                del players_list_info[server_id][i]
+
+    # add number of players from incoming data
+    number_of_players += len(players_list_info[server_id])
+
+    # if there is less than or equal to total of 10 players
+    if number_of_players <= 10:
+        await ctx.send(f"Total Number of Summoners: {number_of_players}")
+
+        # if no file exist in path or if the file is empty, dump incoming data
+        if not os.path.isfile(json_path) or os.path.getsize(json_path) == 0:
+            with open(json_path, "w") as file:
+                json.dump(players_list_info, file, indent=4)
+                file_data = players_list_info
+
+        # append data to the matching server id
+        else:
+            file_data[server_id] += players_list_info[server_id]
+
+            with open(json_path, "w") as file:
+                json.dump(file_data, file, indent=4)
+
     else:
-        print(players_list_info)
-
-        write_json(players_list_info, json_path)
+        # if more than 10 players, send error message
+        num_of_players_needed = 10 - len(file_data[server_id])
+        await ctx.send("You have exceeded limit of 10 summoners!\n")
+        await ctx.send(f"Please add {num_of_players_needed} more summoners!")
 
     embed = discord.Embed(title="List of Summoners", color=discord.Color.dark_gray())
 
     output_str = ""
 
-    for count in range(len(players_list)):
+    for count in range(len(file_data[server_id])):
 
         output_str += (
             "`"
-            + players_list_info["members"][count]["tier_division"][0]
-            + players_list_info["members"][count]["tier_rank_number"]
+            + file_data[server_id][count]["tier_division"][0]
+            + file_data[server_id][count]["tier_rank_number"]
             + "` "
-            + players_list_info["members"][count]["user_name"]
+            + file_data[server_id][count]["user_name"]
             + "\n"
         )
 
