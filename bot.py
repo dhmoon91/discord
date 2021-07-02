@@ -43,6 +43,25 @@ async def on_member_join(member):
     await member.dm_channel.send(f"Hi {member.name}, welcome to 관전남 월드!")
 
 
+# NO Matching command #7
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
+        msg = str(error).split('"')
+        msg = msg[1]
+
+        errembed = discord.Embed(
+            title="⚠️ No Matching Command!",
+            description=f"`{msg}`  was invoked incorrectly.\n Please type  `help`  to see how to use",
+            color=discord.Color.red(),
+        )
+
+        test = helpCommand(bot)
+
+        await ctx.send(embed=errembed)
+        await ctx.send(embed=test)
+
+
 @bot.command(name="rank", help="Get rank of summoner")
 async def get_rank(ctx, name: str):
     """Sends the summoner's rank information to the bot"""
