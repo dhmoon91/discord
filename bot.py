@@ -17,6 +17,7 @@ from discord.ext import commands
 from riot import get_summoner_rank, previous_match
 
 intents = discord.Intents.default()
+# pylint: disable=assigning-non-slot
 intents.members = True  # Subscribe to the privileged members intent.
 
 load_dotenv()
@@ -48,44 +49,46 @@ bot.remove_command("help")
 
 # Custom help command
 @bot.command(name="help", help="This is help command")
-async def help(ctx):
+async def help_command(ctx):
+    """Help command outputs description about all the commands"""
     # Create to display help command in embedded format
-    helpEmbed = discord.Embed(
+    help_embed = discord.Embed(
         title=f"How to use {bot.user.name}",
         description=f"<@!{bot.user.id}> <command>",
         color=discord.Color.gold(),
     )
 
     # ADD thumbnail (Image can be changed whatever we want. eg.our logo)
-    helpEmbed.set_thumbnail(url="https://emoji.gg/assets/emoji/3907_lol.png")
+    help_embed.set_thumbnail(url="https://emoji.gg/assets/emoji/3907_lol.png")
 
-    helpEmbed.add_field(name="** **", value="** **", inline=False)
+    help_embed.add_field(name="** **", value="** **", inline=False)
 
-    helpEmbed.add_field(
+    help_embed.add_field(
         name="** **",
         value="**The list of command examples**",
         inline=False,
     )
 
-    helpEmbed.add_field(
+    help_embed.add_field(
         name="** **",
-        value=f"<@!{bot.user.id}> **{help.name}** \n {help.help}",
+        value=f"<@!{bot.user.id}> **{help_command.name}** \n {help_command.help}",
         inline=False,
     )
 
-    helpEmbed.add_field(
+    help_embed.add_field(
         name="** **",
         value=f"<@!{bot.user.id}> **{get_rank.name} [summoner name]** \n {get_rank.help}",
         inline=False,
     )
 
-    helpEmbed.add_field(
+    help_embed.add_field(
         name="** **",
-        value=f"<@!{bot.user.id}> **{get_last_match.name} [summoner name]** \n {get_last_match.help}",
+        value=f"<@!{bot.user.id}> **{get_last_match.name} [summoner name]** \n \
+         {get_last_match.help}",
         inline=False,
     )
 
-    await ctx.send(embed=helpEmbed)
+    await ctx.send(embed=help_embed)
 
 
 @bot.command(name="rank", help="Get rank of summoner")
