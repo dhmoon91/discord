@@ -2,9 +2,7 @@
 Bot codes
 """
 
-
 import os
-from discord.ext.commands.core import command
 from dotenv import load_dotenv
 
 # saving df to image
@@ -15,10 +13,11 @@ import discord
 from discord.ext import commands
 
 # Riot util func.
-from riot import get_summoner_rank, previous_match, get_help_command
+from riot import get_summoner_rank, previous_match
 
 
 intents = discord.Intents.default()
+# pylint: disable=assigning-non-slot
 intents.members = True  # Subscribe to the privileged members intent.
 
 load_dotenv()
@@ -47,32 +46,40 @@ async def on_member_join(member):
     await member.dm_channel.send(f"Hi {member.name}, welcome to 관전남 월드!")
 
 
-# NO Matching command #7
-@bot.event
-async def on_command_error(ctx, error):
-    print("check")
-    if isinstance(error, commands.CommandNotFound):
-        msg = str(error).split('"')
-        msg = msg[1]
-        print(msg)
-
-        errembed = discord.Embed(
-            title="⚠️ No Matching Command !",
-            description=f"`{msg}`  was invoked incorrectly.\n Please type  `help`  to see how to use",
-            color=discord.Color.red(),
-        )
-
-        help_embed = get_help_command(bot)
-
-        await ctx.send(embed=errembed)
-        await ctx.send(embed=help_embed)
-
-
 @bot.command(name="help", help="This is help command")
 async def help_command(ctx):
     """Help command outputs description about all the commands"""
 
-    help_embed = get_help_command(bot)
+    help_embed = discord.Embed(
+        title=f"How to use {bot.user.name}",
+        description=f"`All Data from NA server`\n\n <@!{bot.user.id}> <command>",
+        color=discord.Color.gold(),
+    )
+
+    # ADD thumbnail (Image can be changed whatever we want. eg.our logo)
+    help_embed.set_thumbnail(url="https://emoji.gg/assets/emoji/3907_lol.png")
+
+    help_embed.add_field(name="** **", value="** **", inline=False)
+
+    help_embed.add_field(
+        name="** **",
+        value="**The list of command examples**",
+        inline=False,
+    )
+
+    help_embed.add_field(
+        name="** **",
+        value=f"<@!{bot.user.id}> **{help_command.name}** \n {help_command.help}",
+        inline=False,
+    )
+
+    for command in bot.commands:
+        if not str(command).startswith("help"):
+            help_embed.add_field(
+                name="** **",
+                value=f"<@!{bot.user.id}> **{command.name} summoner name** \n {command.help}",
+                inline=False,
+            )
 
     await ctx.send(embed=help_embed)
 
@@ -138,6 +145,21 @@ async def on_command_error(ctx, error):
     """Checks error and sends error message if exists"""
     if isinstance(error, commands.errors.CheckFailure):
         await ctx.send("You do not have the correct role for this command.")
+
+    # Send an error message when the user input invalid command
+    elif isinstance(error, commands.CommandNotFound):
+        error = str(error)
+        error = error[error.find('"') + 1 : error.rfind('"')]
+
+        errembed = discord.Embed(
+            title=":warning:   No Matching Command !",
+            description=f"`{error}`  was invoked incorrectly.\n \
+              Please type  `help`  to see how to use",
+            color=discord.Color.red(),
+        )
+
+        await ctx.send(embed=errembed)
+        await help_command(ctx)
 
 
 bot.run(TOKEN)

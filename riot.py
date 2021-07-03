@@ -3,7 +3,7 @@ Data processing the data from riot API
 """
 
 
-import os, discord
+import os
 from riotwatcher import LolWatcher
 import pandas as pd
 import pydash
@@ -109,38 +109,3 @@ def previous_match(name: str):
         participants.append(participants_row)
     last_match_info = pd.DataFrame(participants)
     return last_match_info
-
-
-def get_help_command(bot):
-    help_embed = discord.Embed(
-        title=f"How to use {bot.user.name}",
-        description=f"`All Data from NA server`\n\n <@!{bot.user.id}> <command>",
-        color=discord.Color.gold(),
-    )
-
-    # ADD thumbnail (Image can be changed whatever we want. eg.our logo)
-    help_embed.set_thumbnail(url="https://emoji.gg/assets/emoji/3907_lol.png")
-
-    help_embed.add_field(name="** **", value="** **", inline=False)
-
-    help_embed.add_field(
-        name="** **",
-        value="**The list of command examples**",
-        inline=False,
-    )
-
-    for command in bot.commands:
-        if not str(command).startswith("help"):
-            help_embed.add_field(
-                name="** **",
-                value=f"<@!{bot.user.id}> **{command.name} summoner name** \n {command.help}",
-                inline=False,
-            )
-        else:
-            help_embed.set_field_at(
-                1,
-                name="** **",
-                value=f"<@!{bot.user.id}> **{command.name}** \n {command.help}",
-                inline=False,
-            ).set_field_at
-    return help_embed
