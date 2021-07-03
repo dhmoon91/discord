@@ -24,8 +24,11 @@ load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 LOCAL_BOT_PREFIX = os.getenv("LOCAL_BOT_PREFIX")
 
+# ADD help_command attribute to remove default help command
 bot = commands.Bot(
-    command_prefix=commands.when_mentioned_or(LOCAL_BOT_PREFIX), intents=intents
+    command_prefix=commands.when_mentioned_or(LOCAL_BOT_PREFIX),
+    intents=intents,
+    help_command=None,
 )
 
 
@@ -43,9 +46,6 @@ async def on_member_join(member):
     # Send welcome msg.
     await member.dm_channel.send(f"Hi {member.name}, welcome to 관전남 월드!")
 
-
-# remove default help command to use our help command
-bot.remove_command("help")
 
 # Custom help command
 @bot.command(
