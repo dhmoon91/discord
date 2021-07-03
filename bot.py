@@ -127,7 +127,7 @@ async def add_summoner(ctx, *, message):
             pass
 
     # accepting comma, space and comma plus space
-    players_list = [x.strip() for x in message.replace(" ", ",").split(",")]
+    players_list = [x.strip() for x in message.split(",")]
     players_list = list(filter(None, players_list))
 
     file_data = ""
@@ -147,27 +147,27 @@ async def add_summoner(ctx, *, message):
         if server_id in file_data:
             number_of_players += len(file_data[server_id])
 
-        # send error message to bot then exits out of the function if an error with summoner's name
-        for count, _ in enumerate(players_list):
-            if not check_summoner_name(players_list[count]):
-                embed = discord.Embed(
-                    title=":x:   Invalid Summoner Name",
-                    description=f"`{players_list[count]}` is not a valid summoner name.\n\n \
-                    Please enter a valid summoner name!",
-                    color=discord.Color.red(),
-                )
-                await ctx.send(embed=embed)
-                return None
+    # send error message to bot then exits out of the function if an error with summoner's name
+    for count, _ in enumerate(players_list):
+        if not check_summoner_name(players_list[count]):
+            embed = discord.Embed(
+                title=":x:   Invalid Summoner Name",
+                description=f"`{players_list[count]}` is not a valid summoner name.\n\n \
+                Please enter a valid summoner name!",
+                color=discord.Color.red(),
+            )
+            await ctx.send(embed=embed)
+            return None
 
-            # changes the incoming summoner names to what's in the api
-            players_list[count] = get_summoner_name(players_list[count])
+        # changes the incoming summoner names to what's in the api
+        players_list[count] = get_summoner_name(players_list[count])
 
-            # if summoner name in the json file, remove summoner from adding to the list
-            if any(
-                players_list[count] in player["user_name"]
-                for player in file_data[server_id]
-            ):
-                players_list.remove(players_list[count])
+        # if summoner name in the json file, remove summoner from adding to the list
+        if os.path.getsize(json_path) > 0 and any(
+            players_list[count] in player["user_name"]
+            for player in file_data[server_id]
+        ):
+            players_list.remove(players_list[count])
 
     # add number of players from incoming data
     number_of_players += len(players_list)
