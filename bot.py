@@ -123,7 +123,8 @@ async def add_summoner(ctx, *, message):
     # create a directory containing json file to store data for added summoners
     if not os.path.exists(json_path):
         os.makedirs("data")
-        open(json_path, "w")
+        with open(json_path, "w"):
+            pass
 
     # accepting comma, space and comma plus space
     players_list = [x.strip() for x in message.replace(" ", ",").split(",")]
