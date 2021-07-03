@@ -152,12 +152,22 @@ async def add_summoner(ctx, *, message):
         if not check_summoner_name(players_list[count]):
             embed = discord.Embed(
                 title=":x:   Invalid Summoner Name",
-                description=f"`{players_list[count]}` is not a valid summoner name.\n\n \
-                Please enter a valid summoner name!\n\n \
-                Adding multiple summoners:\n \
-                `@{bot.user.name} add name1, name2`",
+                description=f"`{players_list[count]}` is not a valid summoner name.",
                 color=discord.Color.red(),
             )
+
+            embed.add_field(
+                name="** **",
+                value="Please enter a valid summoner name!",
+                inline=False,
+            )
+
+            embed.add_field(
+                name="** **",
+                value="Adding multiple summoners:\n`@{bot.user.name} add name1, name2`",
+                inline=False,
+            )
+
             await ctx.send(embed=embed)
             return None
 
