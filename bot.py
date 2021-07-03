@@ -153,7 +153,9 @@ async def add_summoner(ctx, *, message):
             embed = discord.Embed(
                 title=":x:   Invalid Summoner Name",
                 description=f"`{players_list[count]}` is not a valid summoner name.\n\n \
-                Please enter a valid summoner name!",
+                Please enter a valid summoner name!\n\n \
+                Adding multiple summoners:\n \
+                `@{bot.user.name} add name1, name2`",
                 color=discord.Color.red(),
             )
             await ctx.send(embed=embed)
