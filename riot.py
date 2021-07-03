@@ -10,6 +10,7 @@ import pydash
 from dotenv import load_dotenv
 import requests
 
+
 load_dotenv()
 RIOTAPIKEY = os.getenv("RIOT_API_KEY")
 
@@ -130,15 +131,7 @@ def create_summoner_list(players_list: list, server_id: str):
     # accessing each player
     for summoner in players_list:
 
-        # check whether the summoner exists in API
-        try:
-            user = watcher.summoner.by_name(MY_REGION, summoner)
-        except requests.exceptions.HTTPError:
-            user = "ERROR"
-
-        # return error message if no summoner was found in API
-        if user == "ERROR":
-            return f"Invalid Summoner Name: {summoner}!"
+        user = watcher.summoner.by_name(MY_REGION, summoner)
 
         user_name = user["name"]
 
@@ -156,21 +149,48 @@ def create_summoner_list(players_list: list, server_id: str):
 
             tier_rank_number = tier_rank_map.get(tier_rank)
 
-            tier = " ".join([tier_division, tier_rank])
-
         # set the tier to unranked if no ranked data was found
         else:
             tier_division = "UNRANKED"
             tier_rank_number = "R"
-            tier = "UNRANKED"
 
         members_to_add[server_id].append(
             {
                 "user_name": user_name,
                 "tier_division": tier_division,
                 "tier_rank_number": tier_rank_number,
-                "tier": tier,
             }
         )
 
     return members_to_add
+
+
+def check_summoner_name(summoner: str):
+    """Checks whether the summoner exists in API
+
+    Parameters:
+    summoner (str): name of the summoner
+
+    Returns:
+    boolean (bool): if doesn't exist, boolean of whether if the summoner exists in API
+    """
+
+    try:
+        watcher.summoner.by_name(MY_REGION, summoner)
+    except requests.exceptions.HTTPError:
+        return False
+
+    return True
+
+
+def get_summoner_name(summoner: str):
+    """Gets summoner name
+
+    Parameters:
+    summoner(str): name of the summoner
+
+    Returns:
+    summoner name (str): name of the summoner from API
+    """
+
+    return watcher.summoner.by_name(MY_REGION, summoner)["name"]

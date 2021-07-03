@@ -5,6 +5,8 @@ Bot codes
 
 import os
 import json
+import asyncio
+
 from dotenv import load_dotenv
 
 # saving df to image
@@ -15,7 +17,13 @@ import discord
 from discord.ext import commands
 
 # Riot util func.
-from riot import get_summoner_rank, previous_match, create_summoner_list
+from riot import (
+    get_summoner_rank,
+    previous_match,
+    create_summoner_list,
+    check_summoner_name,
+    get_summoner_name,
+)
 
 
 intents = discord.Intents.default()
@@ -107,7 +115,15 @@ async def add_summoner(ctx, *, message):
     """Writes list of summoners to local
     json file and sends the list to the bot"""
 
+    async with ctx.typing():
+        await asyncio.sleep(1)
+
     json_path = "data/data.json"
+
+    # create a directory containing json file to store data for added summoners
+    if not os.path.exists(json_path):
+        os.makedirs("data")
+        open(json_path, "w")
 
     # accepting comma, space and comma plus space
     players_list = [x.strip() for x in message.replace(" ", ",").split(",")]
@@ -118,6 +134,7 @@ async def add_summoner(ctx, *, message):
     # initializing number of players to display
     number_of_players = 0
 
+    # initializing server id to a variable
     server_id = str(ctx.guild.id)
 
     # storing the json file into a variable
@@ -129,25 +146,43 @@ async def add_summoner(ctx, *, message):
         if server_id in file_data:
             number_of_players += len(file_data[server_id])
 
-    # make dictionary for newly coming in players
-    players_list_info = create_summoner_list(players_list, server_id)
+        # send error message to bot then exits out of the function if an error with summoner's name
+        for count, _ in enumerate(players_list):
+            if not check_summoner_name(players_list[count]):
+                embed = discord.Embed(
+                    title=":x:   Invalid Summoner Name",
+                    description=f"`{players_list[count]}` is not a valid summoner name.\n\n \
+                    Please enter a valid summoner name!",
+                    color=discord.Color.red(),
+                )
+                await ctx.send(embed=embed)
+                return None
 
-    # if there is an error with the summoner's name, send error message to bot
-    if isinstance(players_list_info, str):
-        await ctx.send(players_list_info)
-        return None
+            # changes the incoming summoner names to what's in the api
+            players_list[count] = get_summoner_name(players_list[count])
 
-    # remove any players that exists within the existing data
-    if os.path.getsize(json_path) > 0 and server_id in file_data:
-        for i in range(len(players_list_info[server_id])):
-            if players_list_info[server_id][i] in file_data[server_id]:
-                del players_list_info[server_id][i]
+            # if summoner name in the json file, remove summoner from adding to the list
+            if any(
+                players_list[count] in player["user_name"]
+                for player in file_data[server_id]
+            ):
+                players_list.remove(players_list[count])
 
     # add number of players from incoming data
-    number_of_players += len(players_list_info[server_id])
+    number_of_players += len(players_list)
 
-    # if there is less than or equal to total of 10 players
-    if number_of_players <= 10:
+    # if more than 10 players, send error message
+    if number_of_players > 10:
+        num_of_players_needed = 10 - len(file_data[server_id])
+        await ctx.send("You have exceeded limit of 10 summoners!\n")
+        await ctx.send(f"Please add {num_of_players_needed} more summoners!\n")
+
+    else:
+        # make dictionary for newly coming in players
+        players_list_info = create_summoner_list(players_list, server_id)
+
+        # if there is less than or equal to total of 10 players
+
         await ctx.send(f"Total Number of Summoners: {number_of_players}")
 
         # if no file exist in path or if the file is empty, dump incoming data
@@ -162,12 +197,6 @@ async def add_summoner(ctx, *, message):
 
             with open(json_path, "w") as file:
                 json.dump(file_data, file, indent=4)
-
-    else:
-        # if more than 10 players, send error message
-        num_of_players_needed = 10 - len(file_data[server_id])
-        await ctx.send("You have exceeded limit of 10 summoners!\n")
-        await ctx.send(f"Please add {num_of_players_needed} more summoners!")
 
     embed = discord.Embed(title="List of Summoners", color=discord.Color.dark_gray())
 
