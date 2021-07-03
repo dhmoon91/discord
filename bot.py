@@ -164,7 +164,7 @@ async def add_summoner(ctx, *, message):
 
             embed.add_field(
                 name="** **",
-                value="Adding multiple summoners:\n`@{bot.user.name} add name1, name2`",
+                value=f"Adding multiple summoners:\n`@{bot.user.name} add name1, name2`",
                 inline=False,
             )
 
