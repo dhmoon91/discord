@@ -124,7 +124,7 @@ async def on_command_error(ctx, error):
         err_embed = discord.Embed(
             title=":warning:   Invalid Command",
             description=f"`{error}`  command is not a valid command.\n \
-              Please type  `help`  to see how to use",
+              \n Please type  `help`  to see how to use",
             color=discord.Color.orange(),
         )
 
