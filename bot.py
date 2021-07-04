@@ -168,5 +168,15 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.errors.CheckFailure):
         await ctx.send("You do not have the correct role for this command.")
 
+    # Send an error message when the user input invalid command
+    elif isinstance(error, commands.CommandNotFound):
+        err_embed = discord.Embed(
+            title=f":warning:   {error}",
+            description="Please type  `help`  to see how to use",
+            color=discord.Color.orange(),
+        )
+
+        await ctx.send(embed=err_embed)
+
 
 bot.run(TOKEN)
