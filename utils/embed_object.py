@@ -1,0 +1,2 @@
+class EmbedData(object):
+    pass

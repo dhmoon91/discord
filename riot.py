@@ -9,8 +9,7 @@ import pandas as pd
 import pydash
 
 from dotenv import load_dotenv
-
-from utils import get_file_path
+from utils.utils import get_file_path
 
 load_dotenv()
 RIOTAPIKEY = os.getenv("RIOT_API_KEY")
@@ -57,7 +56,8 @@ def get_summoner_rank(name: str):
         "user_name": user_name,
         "summoner_icon_image_url": summoner_icon_image_url,
         "summoner_level": user["summonerLevel"],
-        "tier_image": emblem_path,
+        "tier_image_path": emblem_path,
+        "tier_image_name": f"Emblem_{tier_division.capitalize()}.png",
         "tier": tier,
         "solo_win": solo_rank_stat["wins"],
         "solo_loss": solo_rank_stat["losses"],
