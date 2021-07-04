@@ -127,6 +127,8 @@ def create_summoner_list(players_list: list, server_id: str):
 
     """
 
+    # TODO: !add lifeissohard 들어올때 input을 애초에 space가 아예 없이 받고, 그리고 data.json에 저장할때도 이름을 space 없이 저장하기
+
     # dictionary for data input
     members_to_add = {
         server_id: [],
@@ -149,6 +151,7 @@ def create_summoner_list(players_list: list, server_id: str):
             tier_division = solo_rank_stat["tier"]
             tier_rank = solo_rank_stat["rank"]
 
+            # TODO: make them into constants instead (e.g. make constants.py and put it as constant so it can be used globally)
             tier_rank_map = {"I": "1", "II": "2", "III": "3", "IV": "4"}
 
             tier_rank_number = tier_rank_map.get(tier_rank)
@@ -181,7 +184,9 @@ def check_summoner_name(summoner: str):
 
     try:
         watcher.summoner.by_name(MY_REGION, summoner)
+
     except requests.exceptions.HTTPError:
+        # throw with message (object)
         return False
 
     return True
