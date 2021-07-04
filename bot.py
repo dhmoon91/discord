@@ -27,6 +27,9 @@ from riot import (
 )
 
 
+from utils.embed_object import EmbedData
+from utils.utils import create_embed
+
 intents = discord.Intents.default()
 # pylint: disable=assigning-non-slot
 intents.members = True  # Subscribe to the privileged members intent.
@@ -65,39 +68,34 @@ async def on_member_join(member):
 )
 async def help_command(ctx):
     """Help command outputs description about all the commands"""
+    try:
+        embed_data = EmbedData()
+        embed_data.title = f"How to use {bot.user.name}"
+        embed_data.description = (
+            f"`All Data from NA server`\n\n <@!{bot.user.id}> <command>"
+        )
+        embed_data.color = discord.Color.gold()
 
-    help_embed = discord.Embed(
-        title=f"How to use {bot.user.name}",
-        description=f"`All Data from NA server`\n\n <@!{bot.user.id}> <command>",
-        color=discord.Color.gold(),
-    )
+        # ADD thumbnail (Image can be changed whatever we want. eg.our logo)
+        embed_data.thumbnail = "https://emoji.gg/assets/emoji/3907_lol.png"
 
-    # ADD thumbnail (Image can be changed whatever we want. eg.our logo)
-    help_embed.set_thumbnail(url="https://emoji.gg/assets/emoji/3907_lol.png")
+        embed_data.fields = []
+        embed_data.fields.append({"name": "** **", "value": "** **", "inline": False})
 
-    help_embed.add_field(name="** **", value="** **", inline=False)
-
-    help_embed.add_field(
-        name="** **",
-        value="**The list of command examples**",
-        inline=False,
-    )
-
-    help_embed.add_field(
-        name="** **",
-        value=f"<@!{bot.user.id}> **{help_command.name}** \n {help_command.help}",
-        inline=False,
-    )
-
-    for command in bot.commands:
-        if not str(command).startswith("help"):
-            help_embed.add_field(
-                name="** **",
-                value=f"<@!{bot.user.id}> **{command.name} summoner name** \n {command.help}",
-                inline=False,
-            )
-
-    await ctx.send(embed=help_embed)
+        for command in bot.commands:
+            if not str(command).startswith("help"):
+                embed_data.fields.append(
+                    {
+                        "name": "** **",
+                        "value": f"<@!{bot.user.id}> **{command.name} summoner_name** \n \
+                            {command.help}",
+                        "inline": False,
+                    }
+                )
+        await ctx.send(embed=create_embed(embed_data))
+        # pylint: disable=broad-except
+    except Exception as e_values:
+        print(e_values)
 
 
 @bot.command(name="rank", help="Displays the information about the summoner.")
@@ -106,44 +104,50 @@ async def get_rank(ctx, name: str):
     try:
         summoner_info = get_summoner_rank(name)
 
-        embed = discord.Embed(title="Solo/Duo Rank", color=discord.Color.dark_gray())
-
-        summoner_name = summoner_info["user_name"]
-
-        # Removing space of the summoner name to access op.gg url of the summoner
-        summoner_name_opgg = summoner_name.replace(" ", "")
+        embed_data = EmbedData()
+        embed_data.title = "Solo/Duo Rank"
+        embed_data.description = (
+            f"`All Data from NA server`\n\n <@!{bot.user.id}> <command>"
+        )
+        embed_data.color = discord.Color.dark_gray()
 
         # Add author, thumbnail, fields, and footer to the embed
-        embed.set_author(
-            name=summoner_name,
-            url=f"https://na.op.gg/summoner/userName={summoner_name_opgg}",
-            icon_url=summoner_info["summoner_icon_image_url"],
-        )
+        embed_data.author = {}
+        embed_data.author = {
+            "name": summoner_info["user_name"],
+            # For op.gg link, we have to remove all whitespace.
+            "url": "https://na.op.gg/summoner/userName={0}".format(
+                summoner_info["user_name"].replace(" ", "")
+            ),
+            "icon_url": summoner_info["summoner_icon_image_url"],
+        }
 
-        # Get image of tier by path
-        tier_image = summoner_info["tier_image"]
-        file = discord.File(tier_image)
-        # Need to get the filename in order to attach to the thumbnail
+        # Upload tier image to discord to use it as thumbnail of embed using full path of image.
+        file = discord.File(summoner_info["tier_image_path"])
 
-        tier_image_filename = tier_image.replace("ranked-emblems/", "")
         # Embed thumbnail image of tier at the side of the embed
-        embed.set_thumbnail(url=f"attachment://{tier_image_filename}")
+        # Note: This takes the 'file name', not a full path.
+        embed_data.thumbnail = "attachment://{0[tier_image_name]}".format(summoner_info)
 
         # Setting variables for summoner information to display as field
-        summoner_rank = summoner_info["tier"]
-        solo_win = summoner_info["solo_win"]
-        solo_loss = summoner_info["solo_loss"]
-        summoner_total_game = solo_win + solo_loss
-        solo_rank_percentage = int(solo_win / summoner_total_game * 100)
-
-        embed.add_field(
-            name=summoner_rank,
-            value="Total Games Played:"
-            + f"{summoner_total_game}\n{solo_win}W \
-            {solo_loss}L {solo_rank_percentage}%",
-            inline=False,
+        summoner_total_game = summoner_info["solo_win"] + summoner_info["solo_loss"]
+        solo_rank_win_percentage = int(
+            summoner_info["solo_win"] / summoner_total_game * 100
         )
-        await ctx.send(file=file, embed=embed)
+
+        embed_data.fields = []
+        embed_data.fields.append(
+            {
+                "name": "{0[tier]}".format(summoner_info),
+                "value": "Total Games Played: {1}\n{0[solo_win]}W {0[solo_loss]}L {2}%".format(
+                    summoner_info,
+                    summoner_total_game,
+                    solo_rank_win_percentage,
+                ),
+                "inline": False,
+            }
+        )
+        await ctx.send(file=file, embed=create_embed(embed_data))
         # pylint: disable=broad-except
     except Exception as e_values:
         print(e_values)
@@ -299,6 +303,16 @@ async def on_command_error(ctx, error):
     """Checks error and sends error message if exists"""
     if isinstance(error, commands.errors.CheckFailure):
         await ctx.send("You do not have the correct role for this command.")
+
+    # Send an error message when the user input invalid command
+    elif isinstance(error, commands.CommandNotFound):
+        err_embed = discord.Embed(
+            title=f":warning:   {error}",
+            description="Please type  `help`  to see how to use",
+            color=discord.Color.orange(),
+        )
+
+        await ctx.send(embed=err_embed)
 
 
 bot.run(TOKEN)
