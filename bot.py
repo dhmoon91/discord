@@ -25,8 +25,11 @@ load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 LOCAL_BOT_PREFIX = os.getenv("LOCAL_BOT_PREFIX")
 
+# ADD help_command attribute to remove default help command
 bot = commands.Bot(
-    command_prefix=commands.when_mentioned_or(LOCAL_BOT_PREFIX), intents=intents
+    command_prefix=commands.when_mentioned_or(LOCAL_BOT_PREFIX),
+    intents=intents,
+    help_command=None,
 )
 
 
@@ -45,7 +48,49 @@ async def on_member_join(member):
     await member.dm_channel.send(f"Hi {member.name}, welcome to 관전남 월드!")
 
 
-@bot.command(name="rank", help="Get rank of summoner")
+# Custom help command
+@bot.command(
+    name="help",
+    help="Displays the syntax and the description of all the commands.",
+)
+async def help_command(ctx):
+    """Help command outputs description about all the commands"""
+
+    help_embed = discord.Embed(
+        title=f"How to use {bot.user.name}",
+        description=f"`All Data from NA server`\n\n <@!{bot.user.id}> <command>",
+        color=discord.Color.gold(),
+    )
+
+    # ADD thumbnail (Image can be changed whatever we want. eg.our logo)
+    help_embed.set_thumbnail(url="https://emoji.gg/assets/emoji/3907_lol.png")
+
+    help_embed.add_field(name="** **", value="** **", inline=False)
+
+    help_embed.add_field(
+        name="** **",
+        value="**The list of command examples**",
+        inline=False,
+    )
+
+    help_embed.add_field(
+        name="** **",
+        value=f"<@!{bot.user.id}> **{help_command.name}** \n {help_command.help}",
+        inline=False,
+    )
+
+    for command in bot.commands:
+        if not str(command).startswith("help"):
+            help_embed.add_field(
+                name="** **",
+                value=f"<@!{bot.user.id}> **{command.name} summoner name** \n {command.help}",
+                inline=False,
+            )
+
+    await ctx.send(embed=help_embed)
+
+
+@bot.command(name="rank", help="Displays the information about the summoner.")
 async def get_rank(ctx, name: str):
     """Sends the summoner's rank information to the bot"""
     try:
@@ -94,7 +139,10 @@ async def get_rank(ctx, name: str):
         print(e_values)
 
 
-@bot.command(name="last_match", help="Get last match history")
+@bot.command(
+    name="last_match",
+    help="Displays the information about the latest game of the summoner.",
+)
 async def get_last_match(ctx, name: str):
     """Sends the summoner's last match information to the bot"""
     try:
