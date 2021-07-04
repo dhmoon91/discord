@@ -32,7 +32,22 @@ DISCORD_TOKEN={TOKEN}
 pre-commit install --hook-type pre-push
 ```
 
-8. To call the bot with the desired prefix locally, 
+8. We use `pylint` as base-linter
+(Documentation available here: https://code.visualstudio.com/docs/python/linting)
+
+- Install `pylint`; pip3 install pylint
+- Open `Settings` in VS Code, search for `Terminal`, find `Terminal > Integrated > Env: Linux` and click `Edit in settings.json`
+- Add this line in `settings.json`
+```
+{
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true,
+    "python.linting.lintOnSave": true
+}
+```
+- Now `pylint` will run when you save a file
+
+9. To call the bot with the desired prefix locally, 
 
 - Add `LOCAL_BOT_PREFIX= ""` to .env with desired prefix between the double quotes
 
