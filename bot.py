@@ -167,7 +167,7 @@ async def on_command_error(ctx, error):
     # Send an error message when the user input invalid command
     elif isinstance(error, commands.CommandNotFound):
         err_embed = discord.Embed(
-            title=":warning:   Invalid Command",
+            title=f":warning:   {error}",
             description="Please type  `help`  to see how to use",
             color=discord.Color.orange(),
         )
