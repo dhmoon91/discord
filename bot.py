@@ -10,6 +10,9 @@ from dotenv import load_dotenv
 # saving df to image
 import dataframe_image as dfi
 
+# catching Api error
+from riotwatcher import ApiError
+
 # Discord
 import discord
 from discord.ext import commands
@@ -20,9 +23,11 @@ from riot import get_summoner_rank, previous_match
 from utils.embed_object import EmbedData
 from utils.utils import create_embed
 
+
 intents = discord.Intents.default()
 # pylint: disable=assigning-non-slot
 intents.members = True  # Subscribe to the privileged members intent.
+
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
@@ -89,7 +94,7 @@ async def help_command(ctx):
 
 
 @bot.command(name="rank", help="Displays the information about the summoner.")
-async def get_rank(ctx, name: str):
+async def get_rank(ctx, *, name: str):  # using * for get a summoner name with space
     """Sends the summoner's rank information to the bot"""
     try:
         summoner_info = get_summoner_rank(name)
@@ -139,15 +144,30 @@ async def get_rank(ctx, name: str):
         )
         await ctx.send(file=file, embed=create_embed(embed_data))
         # pylint: disable=broad-except
-    except Exception as e_values:
-        print(e_values)
+    except ApiError as e_values:
+        # 404 error means Data not found in API
+        if e_values.response.status_code == 404:
+            error_title = f'Summoner "{name}" is not found'
+            error_description = f"Please check the summoner name agian \n \
+                \n __*NOTE*__:   **{get_rank.name}** command only accepts one summoner name.\
+                \n\n Please type  `rank --help`  to see how to use"
+        else:
+            error_title = "Error"
+            error_description = "Oops! Something went wrong.\n\nPlease try again!"
+
+        embed_data = EmbedData()
+        embed_data.title = ":x:   {0}".format(error_title)
+        embed_data.description = "{0}".format(error_description)
+        embed_data.color = discord.Color.red()
+
+        await ctx.send(embed=create_embed(embed_data))
 
 
 @bot.command(
     name="last_match",
     help="Displays the information about the latest game of the summoner.",
 )
-async def get_last_match(ctx, name: str):
+async def get_last_match(ctx, *, name: str):
     """Sends the summoner's last match information to the bot"""
     try:
         last_match_info = previous_match(name)
@@ -158,8 +178,22 @@ async def get_last_match(ctx, name: str):
         await ctx.send(embed=embed, file=file)
         os.remove("df_styled.png")
         # pylint: disable=broad-except
-    except Exception as e_values:
-        print(e_values)
+    except ApiError as e_values:
+        if e_values.response.status_code == 404:
+            error_title = f'Summoner "{name}" is not found'
+            error_description = f"Please check the summoner name agian \n \
+                \n __*NOTE*__ :   **{get_last_match.name}** command only accepts one summoner name.\
+                \n\n Please type  `last_match --help`  to see how to use"
+        else:
+            error_title = "Error"
+            error_description = "Oops! Something went wrong.\n\nPlease try again!"
+
+        embed_data = EmbedData()
+        embed_data.title = ":x:   {0}".format(error_title)
+        embed_data.description = "{0}".format(error_description)
+        embed_data.color = discord.Color.red()
+
+        await ctx.send(embed=create_embed(embed_data))
 
 
 @bot.event
