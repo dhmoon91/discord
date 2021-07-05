@@ -127,79 +127,47 @@ def create_summoner_list(players_list: list, server_id: str):
 
     """
 
-    # TODO: !add lifeissohard 들어올때 input을 애초에 space가 아예 없이 받고, 그리고 data.json에 저장할때도 이름을 space 없이 저장하기
-
-    # dictionary for data input
-    members_to_add = {
-        server_id: [],
-    }
-
-    # accessing each player
-    for summoner in players_list:
-
-        user = watcher.summoner.by_name(MY_REGION, summoner)
-
-        user_name = user["name"]
-
-        ranked_stat = watcher.league.by_summoner(MY_REGION, user["id"])
-
-        # check if there is any rank data on user as unranked players don't have any data on ranked
-        if len(ranked_stat) > 0:
-
-            solo_rank_stat = pydash.find(ranked_stat, {"queueType": "RANKED_SOLO_5x5"})
-
-            tier_division = solo_rank_stat["tier"]
-            tier_rank = solo_rank_stat["rank"]
-
-            # TODO: make them into constants instead (e.g. make constants.py and put it as constant so it can be used globally)
-            tier_rank_map = {"I": "1", "II": "2", "III": "3", "IV": "4"}
-
-            tier_rank_number = tier_rank_map.get(tier_rank)
-
-        # set the tier to unranked if no ranked data was found
-        else:
-            tier_division = "UNRANKED"
-            tier_rank_number = "R"
-
-        members_to_add[server_id].append(
-            {
-                "user_name": user_name,
-                "tier_division": tier_division,
-                "tier_rank_number": tier_rank_number,
-            }
-        )
-
-    return members_to_add
-
-
-def check_summoner_name(summoner: str):
-    """Checks whether the summoner exists in API
-
-    Parameters:
-    summoner (str): name of the summoner
-
-    Returns:
-    boolean (bool): if doesn't exist, boolean of whether if the summoner exists in API
-    """
-
     try:
-        watcher.summoner.by_name(MY_REGION, summoner)
+        # dictionary for data input
+        members_to_add = {
+            server_id: [],
+        }
 
-    except requests.exceptions.HTTPError:
-        # throw with message (object)
-        return False
+        # accessing each player
+        for summoner in players_list:
 
-    return True
+            user = watcher.summoner.by_name(MY_REGION, summoner)
 
+            user_name = user["name"]
 
-def get_summoner_name(summoner: str):
-    """Gets summoner name
+            ranked_stat = watcher.league.by_summoner(MY_REGION, user["id"])
 
-    Parameters:
-    summoner(str): name of the summoner
+            # get ranked data on summoner
+            if len(ranked_stat) > 0:
 
-    Returns:
-    summoner name (str): name of the summoner from API
-    """
+                solo_rank_stat = pydash.find(
+                    ranked_stat, {"queueType": "RANKED_SOLO_5x5"}
+                )
 
-    return watcher.summoner.by_name(MY_REGION, summoner)["name"]
+                tier_division = solo_rank_stat["tier"]
+                tier_rank_number = solo_rank_stat["rank"]
+
+            # set the tier to unranked if no ranked data was found
+            else:
+                tier_division = "UNRANKED"
+                tier_rank_number = "R"
+
+            members_to_add[server_id].append(
+                {
+                    "user_name": summoner,
+                    "formatted_user_name": user_name,
+                    "tier_division": tier_division,
+                    "tier_rank_number": tier_rank_number,
+                }
+            )
+
+        return members_to_add
+    # pylint: disable=broad-except
+    except Exception as e_values:
+        print(e_values.args)
+        raise e_values

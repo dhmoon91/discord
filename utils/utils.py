@@ -2,12 +2,12 @@
 Utils
 """
 
+# OS
+from os.path import dirname, join
 
 # Discord
 import discord
 
-# OS
-from os.path import dirname, join
 
 root_dirname = dirname(dirname(__file__))
 
@@ -17,9 +17,11 @@ def get_file_path(file_path):
     return join(root_dirname, file_path)
 
 
+# pylint: disable=fixme
 # TODO: Properly check for each fields existence and set values.
 # eg; Currently assumes title, description, color will be in 'embed_object',
 # same for inner objects of 'fields', author object.
+# pylint: disable=inconsistent-return-statements
 def create_embed(embed_object):
     """Helper function to create embed for discords"""
     try:
@@ -48,6 +50,7 @@ def create_embed(embed_object):
                 )
 
         return embed
+    # pylint: disable=broad-except
     except Exception as e_values:
         print("error embed")
         print(e_values)

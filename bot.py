@@ -18,17 +18,12 @@ import discord
 from discord.ext import commands
 
 # Riot util func.
-from riot import (
-    get_summoner_rank,
-    previous_match,
-    create_summoner_list,
-    check_summoner_name,
-    get_summoner_name,
-)
+from riot import get_summoner_rank, previous_match, create_summoner_list
 
 
 from utils.embed_object import EmbedData
-from utils.utils import create_embed
+from utils.utils import create_embed, get_file_path
+from utils.constants import TIER_RANK_MAP, MAX_NUM_PLAYERS_TEAM
 
 intents = discord.Intents.default()
 # pylint: disable=assigning-non-slot
@@ -37,6 +32,7 @@ intents.members = True  # Subscribe to the privileged members intent.
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 LOCAL_BOT_PREFIX = os.getenv("LOCAL_BOT_PREFIX")
+
 
 # ADD help_command attribute to remove default help command
 bot = commands.Bot(
@@ -172,6 +168,10 @@ async def get_last_match(ctx, name: str):
         print(e_values)
 
 
+# Will come back to this later after exam
+# pylint: disable=too-many-locals
+# pylint: disable=too-many-branches
+# pylint: disable=too-many-statements
 @bot.command(name="add", help="Add the players to the list")
 async def add_summoner(ctx, *, message):
     """Writes list of summoners to local
@@ -182,17 +182,17 @@ async def add_summoner(ctx, *, message):
         async with ctx.typing():
             await asyncio.sleep(1)
 
-        json_path = "data/data.json"
+        data_folder_path = get_file_path("data/")
+        json_path = data_folder_path + "data.json"
 
         # create a directory containing json file to store data for added summoners
         if not os.path.exists(json_path):
-            os.makedirs("data")
+            os.makedirs(data_folder_path)
             with open(json_path, "w"):
                 pass
 
-        # accepting comma, space and comma plus space
-        # TODO: !add lifeissohard 들어올때 input을 애초에 space가 아예 없이 받고, 그리고 data.json에 저장할때도 이름을 space 없이 저장하기
-        player_list = message.replace(" ","").lower().split(",")
+        # converting the message into list of summoners
+        player_list = message.replace(" ", "").lower().split(",")
 
         # for importing data from json file
         file_data = ""
@@ -206,82 +206,33 @@ async def add_summoner(ctx, *, message):
         # storing the json file into a variable
         if os.path.getsize(json_path) > 0:
             with open(json_path, "r") as file:
-                # TODO: check if you can load part of the json file (specific server id data)
                 file_data = json.load(file)
 
             # if server id exist in json, add number of players
             if server_id in file_data:
                 total_number_of_players += len(file_data[server_id])
-                
+
             # remove summoners from incoming data if it exists in json file with same server ID
-            for count, player_name in enumerate(player_list):
-                if any(player_name in player["user_name"] for player in file_data[server_id]):
+            for player_name in player_list:
+                if any(
+                    player_name in player["user_name"]
+                    for player in file_data[server_id]
+                ):
                     player_list.remove(player_name)
 
-            # add number of summoners from incoming data to total number of players
-            total_number_of_players += len(player_list)    
+        # add number of summoners from incoming data to total number of players
+        total_number_of_players += len(player_list)
 
-        if total_number_of_players > 10:
-            # TODO: throw error
-            print("THROW with a message")
-        # send error message to bot then exits out of the function if an error with summoner's name
-        for player_name in enumerate(player_list):
-            if not check_summoner_name(player_name):
-                embed = discord.Embed(
-                    title=":x:   Invalid Summoner Name",
-                    description=f"`{player_name}` is not a valid summoner name.",
-                    color=discord.Color.red(),
-                )
-
-                embed.add_field(
-                    name="** **",
-                    value="Please enter a valid summoner name!",
-                    inline=False,
-                )
-
-                embed.add_field(
-                    name="** **",
-                    value=f"Adding multiple summoners:\n`@{bot.user.name} add name1, name2`",
-                    inline=False,
-                )
-
-                await ctx.send(embed=embed)
-                return None
-
-            # changes the incoming summoner names to what's in the api
-            # NOT needed since there won't be any space in summoner name in json data
-            players_list[count] = get_summoner_name(players_list[count])
-
-            # if summoner name in the json file, remove summoner from adding to the list
-            if os.path.getsize(json_path) > 0 and any(
-                players_list[count] in player["user_name"]
-                for player in file_data[server_id]
-            ):
-                players_list.remove(players_list[count])
-
-        # add number of players from incoming data
-        number_of_players += len(players_list)
-
-        # if more than 10 players, send error message
-        # TODO: throw message
-        if number_of_players > 10:
-            num_of_players_needed = 10 - len(file_data[server_id])
-            await ctx.send("You have exceeded limit of 10 summoners!\n")
-            await ctx.send(f"Please add {num_of_players_needed} more summoners!\n")
-
-        # TODO: in data.json store as
-        #name: lifeissohard
-        #name_in_api: Life is so hard
+        if total_number_of_players > MAX_NUM_PLAYERS_TEAM:
+            raise Exception
 
         # make dictionary for newly coming in players
-        players_list_info = create_summoner_list(players_list, server_id)
+        players_list_info = create_summoner_list(player_list, server_id)
 
-        # if there is less than or equal to total of 10 players
-
-        await ctx.send(f"Total Number of Summoners: {number_of_players}")
+        await ctx.send(f"Total Number of Summoners: {total_number_of_players}")
 
         # if no file exist in path or if the file is empty, dump incoming data
-        if not os.path.isfile(json_path) or os.path.getsize(json_path) == 0:
+        if os.path.getsize(json_path) == 0 or server_id not in file_data:
             with open(json_path, "w") as file:
                 json.dump(players_list_info, file, indent=4)
                 file_data = players_list_info
@@ -293,32 +244,46 @@ async def add_summoner(ctx, *, message):
             with open(json_path, "w") as file:
                 json.dump(file_data, file, indent=4)
 
-    # 이거 따로 function으로 빼기
-
-        embed = discord.Embed(title="List of Summoners", color=discord.Color.dark_gray())
+        embed_data = EmbedData()
+        embed_data.title = "List of Summoners"
+        embed_data.description = "** **"
+        embed_data.color = discord.Color.dark_gray()
 
         output_str = ""
 
         for count in range(len(file_data[server_id])):
 
-            output_str += (
-                "`"
-                + file_data[server_id][count]["tier_division"][0]
-                + file_data[server_id][count]["tier_rank_number"]
-                + "` "
-                + file_data[server_id][count]["user_name"]
-                + "\n"
+            output_str += "`{0}{1}` {2}\n".format(
+                file_data[server_id][count]["tier_division"][0],
+                TIER_RANK_MAP.get(file_data[server_id][count]["tier_rank_number"]),
+                file_data[server_id][count]["formatted_user_name"],
             )
 
-        embed.add_field(
-            name="Summoners",
-            value=output_str,
-            inline=False,
+        embed_data.fields = []
+        embed_data.fields.append(
+            {"name": "Summoners", "value": output_str, "inline": False}
         )
 
-        await ctx.send(embed=embed)
-    except Exception as e:
-        # TODO: 404 (data not found) OR general output like Oops something went wrong! Try again!
+        await ctx.send(embed=create_embed(embed_data))
+    # pylint: disable=broad-except
+    except Exception as e_values:
+        print(str(e_values))
+
+        if "404" in str(e_values):
+            error_title = "Invalid Summoner Name"
+            error_description = "You have entered an invalid summoner name!"
+        elif not str(e_values):
+            error_title = "Unable to Add"
+            error_description = "You have exceeded a limit of 10 summoners!"
+        else:
+            error_title = "Error"
+            error_description = "Oops! Something went wrong.\nTry again!"
+
+        embed_data = EmbedData()
+        embed_data.title = ":x:   {0}".format(error_title)
+        embed_data.description = "{0}".format(error_description)
+        embed_data.color = discord.Color.red()
+        await ctx.send(embed=create_embed(embed_data))
 
 
 @bot.event
