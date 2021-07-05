@@ -27,7 +27,12 @@ DISCORD_TOKEN={TOKEN}
   ```
 - This will set up auto formatting upon saving a file.
 
-7. To call the bot with the desired prefix locally, 
+7. To enable `pylint` on `pre-push`, please run following command:
+```
+pre-commit install --hook-type pre-push
+```
+
+8. To call the bot with the desired prefix locally, 
 
 - Add `LOCAL_BOT_PREFIX= ""` to .env with desired prefix between the double quotes
 
