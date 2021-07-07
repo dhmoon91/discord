@@ -10,9 +10,6 @@ from dotenv import load_dotenv
 # saving df to image
 import dataframe_image as dfi
 
-# catching Api error
-from riotwatcher import ApiError
-
 # Discord
 import discord
 from discord.ext import commands
@@ -88,9 +85,17 @@ async def help_command(ctx):
                     }
                 )
         await ctx.send(embed=create_embed(embed_data))
-        # pylint: disable=broad-except
-    except Exception as e_values:
-        print(e_values)
+
+    # pylint: disable=broad-except
+    except Exception:
+        err_embed = discord.Embed(
+            title="Error",
+            description="Oops! Something went wrong.\n\nPlease try again!\
+              \n\n Please type  `rank --help`  to see how to use",
+            color=discord.Color.red(),
+        )
+
+        await ctx.send(embed=err_embed)
 
 
 @bot.command(name="rank", help="Displays the information about the summoner.")
@@ -143,17 +148,19 @@ async def get_rank(ctx, *, name: str):  # using * for get a summoner name with s
             }
         )
         await ctx.send(file=file, embed=create_embed(embed_data))
-        # pylint: disable=broad-except
-    except ApiError as e_values:
+
+    # pylint: disable=broad-except
+    except Exception as e_values:
         # 404 error means Data not found in API
-        if e_values.response.status_code == 404:
+        if "404" in str(e_values):
             error_title = f'Summoner "{name}" is not found'
             error_description = f"Please check the summoner name agian \n \
-                \n __*NOTE*__:   **{get_rank.name}** command only accepts one summoner name.\
-                \n\n Please type  `rank --help`  to see how to use"
+              \n __*NOTE*__:   **{get_rank.name}** command only accepts one summoner name.\
+              \n\n Please type  `rank --help`  to see how to use"
         else:
             error_title = "Error"
-            error_description = "Oops! Something went wrong.\n\nPlease try again!"
+            error_description = "Oops! Something went wrong.\n\nPlease try again!\
+              \n\n Please type  `rank --help`  to see how to use"
 
         embed_data = EmbedData()
         embed_data.title = ":x:   {0}".format(error_title)
@@ -177,16 +184,20 @@ async def get_last_match(ctx, *, name: str):
         embed.set_image(url="attachment://df_styled.png")
         await ctx.send(embed=embed, file=file)
         os.remove("df_styled.png")
-        # pylint: disable=broad-except
-    except ApiError as e_values:
-        if e_values.response.status_code == 404:
+
+    # pylint: disable=broad-except
+    except Exception as e_values:
+        # 404 error means Data not found in API
+        if "404" in str(e_values):
             error_title = f'Summoner "{name}" is not found'
             error_description = f"Please check the summoner name agian \n \
-                \n __*NOTE*__ :   **{get_last_match.name}** command only accepts one summoner name.\
-                \n\n Please type  `last_match --help`  to see how to use"
+              \n __*NOTE*__ :   **{get_last_match.name}** command only accepts one summoner name.\
+              \n\n Please type  `last_match --help`  to see how to use"
+
         else:
             error_title = "Error"
-            error_description = "Oops! Something went wrong.\n\nPlease try again!"
+            error_description = "Oops! Something went wrong.\n\nPlease try again!\
+              \n\n Please type  `last_match --help`  to see how to use"
 
         embed_data = EmbedData()
         embed_data.title = ":x:   {0}".format(error_title)
