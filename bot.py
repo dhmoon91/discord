@@ -4,6 +4,9 @@ Bot codes
 
 
 import os
+import json
+import asyncio
+
 from dotenv import load_dotenv
 
 
@@ -15,10 +18,12 @@ import discord
 from discord.ext import commands
 
 # Riot util func.
-from riot import get_summoner_rank, previous_match
+from riot import get_summoner_rank, previous_match, create_summoner_list
+
 
 from utils.embed_object import EmbedData
-from utils.utils import create_embed
+from utils.utils import create_embed, get_file_path
+from utils.constants import TIER_RANK_MAP, MAX_NUM_PLAYERS_TEAM
 
 intents = discord.Intents.default()
 # pylint: disable=assigning-non-slot
@@ -27,6 +32,7 @@ intents.members = True  # Subscribe to the privileged members intent.
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 LOCAL_BOT_PREFIX = os.getenv("LOCAL_BOT_PREFIX")
+
 
 # ADD help_command attribute to remove default help command
 bot = commands.Bot(
@@ -160,6 +166,124 @@ async def get_last_match(ctx, name: str):
         # pylint: disable=broad-except
     except Exception as e_values:
         print(e_values)
+
+
+# Will come back to this later after exam
+# pylint: disable=too-many-locals
+# pylint: disable=too-many-branches
+# pylint: disable=too-many-statements
+@bot.command(name="add", help="Add the players to the list")
+async def add_summoner(ctx, *, message):
+    """Writes list of summoners to local
+    json file and sends the list to the bot"""
+
+    try:
+        # typing indicator
+        async with ctx.typing():
+            await asyncio.sleep(1)
+
+        data_folder_path = get_file_path("data/")
+        json_path = data_folder_path + "data.json"
+
+        # create a directory containing json file to store data for added summoners
+        if not os.path.exists(json_path):
+            os.makedirs(data_folder_path)
+            with open(json_path, "w"):
+                pass
+
+        # converting the message into list of summoners
+        player_list = message.replace(" ", "").lower().split(",")
+
+        # for importing data from json file
+        file_data = ""
+
+        # initializing total number of players for counting both incoming and existing summoners
+        total_number_of_players = 0
+
+        # initializing server id to a variable
+        server_id = str(ctx.guild.id)
+
+        # storing the json file into a variable
+        if os.path.getsize(json_path) > 0:
+            with open(json_path, "r") as file:
+                file_data = json.load(file)
+
+            # if server id exist in json, add number of players
+            if server_id in file_data:
+                total_number_of_players += len(file_data[server_id])
+
+            # remove summoners from incoming data if it exists in json file with same server ID
+            for player_name in player_list:
+                if any(
+                    player_name in player["user_name"]
+                    for player in file_data[server_id]
+                ):
+                    player_list.remove(player_name)
+
+        # add number of summoners from incoming data to total number of players
+        total_number_of_players += len(player_list)
+
+        if total_number_of_players > MAX_NUM_PLAYERS_TEAM:
+            raise Exception
+
+        # make dictionary for newly coming in players
+        players_list_info = create_summoner_list(player_list, server_id)
+
+        await ctx.send(f"Total Number of Summoners: {total_number_of_players}")
+
+        # if no file exist in path or if the file is empty, dump incoming data
+        if os.path.getsize(json_path) == 0 or server_id not in file_data:
+            with open(json_path, "w") as file:
+                json.dump(players_list_info, file, indent=4)
+                file_data = players_list_info
+
+        # append data to the matching server id
+        else:
+            file_data[server_id] += players_list_info[server_id]
+
+            with open(json_path, "w") as file:
+                json.dump(file_data, file, indent=4)
+
+        embed_data = EmbedData()
+        embed_data.title = "List of Summoners"
+        embed_data.description = "** **"
+        embed_data.color = discord.Color.dark_gray()
+
+        output_str = ""
+
+        for count in range(len(file_data[server_id])):
+
+            output_str += "`{0}{1}` {2}\n".format(
+                file_data[server_id][count]["tier_division"][0],
+                TIER_RANK_MAP.get(file_data[server_id][count]["tier_rank_number"]),
+                file_data[server_id][count]["formatted_user_name"],
+            )
+
+        embed_data.fields = []
+        embed_data.fields.append(
+            {"name": "Summoners", "value": output_str, "inline": False}
+        )
+
+        await ctx.send(embed=create_embed(embed_data))
+    # pylint: disable=broad-except
+    except Exception as e_values:
+        print(str(e_values))
+
+        if "404" in str(e_values):
+            error_title = "Invalid Summoner Name"
+            error_description = "You have entered an invalid summoner name!"
+        elif not str(e_values):
+            error_title = "Unable to Add"
+            error_description = "You have exceeded a limit of 10 summoners!"
+        else:
+            error_title = "Error"
+            error_description = "Oops! Something went wrong.\nTry again!"
+
+        embed_data = EmbedData()
+        embed_data.title = ":x:   {0}".format(error_title)
+        embed_data.description = "{0}".format(error_description)
+        embed_data.color = discord.Color.red()
+        await ctx.send(embed=create_embed(embed_data))
 
 
 @bot.event

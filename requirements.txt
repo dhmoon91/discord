@@ -8,3 +8,5 @@ dataframe_image
 black
 pylint
 pre-commit
+requests
+asyncio

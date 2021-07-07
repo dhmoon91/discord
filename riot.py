@@ -7,7 +7,6 @@ import os
 from riotwatcher import LolWatcher
 import pandas as pd
 import pydash
-
 from dotenv import load_dotenv
 from utils.utils import get_file_path
 
@@ -115,3 +114,60 @@ def previous_match(name: str):
         participants.append(participants_row)
     last_match_info = pd.DataFrame(participants)
     return last_match_info
+
+
+def create_summoner_list(players_list: list, server_id: str):
+    """Gets the list of summoners and returns the information abou the summoners
+    Parameters:
+    players_list (list): list of summoner names
+    server_id (int): discord server id
+
+    Returns:
+    members_to_add (dict): summoner's latest match information
+
+    """
+
+    try:
+        # dictionary for data input
+        members_to_add = {
+            server_id: [],
+        }
+
+        # accessing each player
+        for summoner in players_list:
+
+            user = watcher.summoner.by_name(MY_REGION, summoner)
+
+            user_name = user["name"]
+
+            ranked_stat = watcher.league.by_summoner(MY_REGION, user["id"])
+
+            # get ranked data on summoner
+            if len(ranked_stat) > 0:
+
+                solo_rank_stat = pydash.find(
+                    ranked_stat, {"queueType": "RANKED_SOLO_5x5"}
+                )
+
+                tier_division = solo_rank_stat["tier"]
+                tier_rank_number = solo_rank_stat["rank"]
+
+            # set the tier to unranked if no ranked data was found
+            else:
+                tier_division = "UNRANKED"
+                tier_rank_number = "R"
+
+            members_to_add[server_id].append(
+                {
+                    "user_name": summoner,
+                    "formatted_user_name": user_name,
+                    "tier_division": tier_division,
+                    "tier_rank_number": tier_rank_number,
+                }
+            )
+
+        return members_to_add
+    # pylint: disable=broad-except
+    except Exception as e_values:
+        print(e_values.args)
+        raise e_values
