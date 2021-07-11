@@ -41,6 +41,10 @@ bot = commands.Bot(
     help_command=None,
 )
 
+# folder and path for data json
+data_folder_path = get_file_path("data/")
+json_path = data_folder_path + "data.json"
+
 
 @bot.event
 async def on_ready():
@@ -179,9 +183,6 @@ async def add_summoner(ctx, *, message):
         async with ctx.typing():
             await asyncio.sleep(1)
 
-        data_folder_path = get_file_path("data/")
-        json_path = data_folder_path + "data.json"
-
         # create a directory containing json file to store data for added summoners
         if not os.path.exists(json_path):
             os.makedirs(data_folder_path, exist_ok=True)
@@ -286,10 +287,6 @@ async def display_current_list_of_summoners(ctx):
     try:
         # server id
         server_id = str(ctx.guild.id)
-
-        # folder and path for data json
-        data_folder_path = get_file_path("data/")
-        json_path = data_folder_path + "data.json"
 
         file_data = ""
 
