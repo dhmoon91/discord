@@ -126,7 +126,6 @@ def create_summoner_list(players_list: list, server_id: str):
     members_to_add (dict): summoner's latest match information
 
     """
-
     try:
         # dictionary for data input
         members_to_add = {
@@ -159,7 +158,7 @@ def create_summoner_list(players_list: list, server_id: str):
 
             members_to_add[server_id].append(
                 {
-                    "user_name": summoner,
+                    "user_name": summoner.replace(" ", ""),
                     "formatted_user_name": user_name,
                     "tier_division": tier_division,
                     "tier_rank_number": tier_rank_number,
@@ -168,6 +167,5 @@ def create_summoner_list(players_list: list, server_id: str):
 
         return members_to_add
     # pylint: disable=broad-except
-    except Exception as e_values:
-        print(e_values.args)
-        raise e_values
+    except Exception as e_str:
+        raise Exception(e_str, summoner) from e_str

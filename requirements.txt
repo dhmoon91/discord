@@ -7,5 +7,4 @@ riotwatcher
 dataframe_image
 black
 pylint
-requests
 asyncio

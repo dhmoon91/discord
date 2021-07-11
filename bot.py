@@ -168,10 +168,7 @@ async def get_last_match(ctx, name: str):
         print(e_values)
 
 
-# Will come back to this later after exam
-# pylint: disable=too-many-locals
-# pylint: disable=too-many-branches
-# pylint: disable=too-many-statements
+# pylint: disable=too-many-locals, too-many-branches, too-many-statements
 @bot.command(name="add", help="Add the players to the list")
 async def add_summoner(ctx, *, message):
     """Writes list of summoners to local
@@ -192,7 +189,7 @@ async def add_summoner(ctx, *, message):
                 pass
 
         # converting the message into list of summoners
-        player_list = message.replace(" ", "").lower().split(",")
+        player_list = message.split(",")
 
         # for importing data from json file
         file_data = ""
@@ -224,7 +221,9 @@ async def add_summoner(ctx, *, message):
         total_number_of_players += len(player_list)
 
         if total_number_of_players > MAX_NUM_PLAYERS_TEAM:
-            raise Exception
+            raise Exception(
+                "Limit Exceeded", "You have exceeded a limit of 10 summoners!"
+            )
 
         # make dictionary for newly coming in players
         players_list_info = create_summoner_list(player_list, server_id)
@@ -267,14 +266,14 @@ async def add_summoner(ctx, *, message):
         await ctx.send(embed=create_embed(embed_data))
     # pylint: disable=broad-except
     except Exception as e_values:
-        print(str(e_values))
 
         if "404" in str(e_values):
             error_title = "Invalid Summoner Name"
-            error_description = "You have entered an invalid summoner name!"
-        elif not str(e_values):
+            error_description = f"`{e_values.args[1]}` is not a valid name. \
+                \n\nAdding multiple summoners:\n `@{bot.user.name} add name1, name2`"
+        elif "Limit Exceeded" in str(e_values):
             error_title = "Unable to Add"
-            error_description = "You have exceeded a limit of 10 summoners!"
+            error_description = f"{e_values.args[1]}"
         else:
             error_title = "Error"
             error_description = "Oops! Something went wrong.\nTry again!"
