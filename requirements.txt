@@ -7,4 +7,5 @@ riotwatcher
 dataframe_image
 black
 pylint
+asyncio
 pre-commit
