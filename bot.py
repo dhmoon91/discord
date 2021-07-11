@@ -184,7 +184,7 @@ async def add_summoner(ctx, *, message):
 
         # create a directory containing json file to store data for added summoners
         if not os.path.exists(json_path):
-            os.makedirs(data_folder_path)
+            os.makedirs(data_folder_path, exist_ok=True)
             with open(json_path, "w"):
                 pass
 
@@ -209,32 +209,41 @@ async def add_summoner(ctx, *, message):
             if server_id in file_data:
                 total_number_of_players += len(file_data[server_id])
 
-            # remove summoners from incoming data if it exists in json file with same server ID
-            for player_name in player_list:
-                if any(
-                    player_name in player["user_name"]
-                    for player in file_data[server_id]
-                ):
-                    player_list.remove(player_name)
+                # remove summoners from incoming data if it exists in json file with same server ID
+                for player_name in player_list:
+                    if any(
+                        player_name in player["user_name"]
+                        for player in file_data[server_id]
+                    ):
+                        player_list.remove(player_name)
 
         # add number of summoners from incoming data to total number of players
         total_number_of_players += len(player_list)
 
         if total_number_of_players > MAX_NUM_PLAYERS_TEAM:
             raise Exception(
-                "Limit Exceeded", "You have exceeded a limit of 10 summoners!"
+                "Limit Exceeded",
+                "You have exceeded a limit of 10 summoners! \
+                \nPlease add {0} more summoners!".format(
+                    MAX_NUM_PLAYERS_TEAM - total_number_of_players + len(player_list)
+                ),
             )
 
         # make dictionary for newly coming in players
         players_list_info = create_summoner_list(player_list, server_id)
 
-        await ctx.send(f"Total Number of Summoners: {total_number_of_players}")
-
         # if no file exist in path or if the file is empty, dump incoming data
-        if os.path.getsize(json_path) == 0 or server_id not in file_data:
+        if os.path.getsize(json_path) == 0:
             with open(json_path, "w") as file:
                 json.dump(players_list_info, file, indent=4)
                 file_data = players_list_info
+
+        elif server_id not in file_data:
+
+            file_data.update(players_list_info)
+
+            with open(json_path, "w") as file:
+                json.dump(file_data, file, indent=4)
 
         # append data to the matching server id
         else:
@@ -243,11 +252,67 @@ async def add_summoner(ctx, *, message):
             with open(json_path, "w") as file:
                 json.dump(file_data, file, indent=4)
 
+        # display list of summoners
+        await display_current_list_of_summoners(ctx)
+
+    # pylint: disable=broad-except
+    except Exception as e_values:
+
+        if "404" in str(e_values):
+            error_title = "Invalid Summoner Name"
+            error_description = f"`{e_values.args[1]}` is not a valid name. \
+                \n\nAdding multiple summoners:\n `@{bot.user.name} add name1, name2`"
+        elif "Limit Exceeded" in str(e_values):
+            error_title = e_values.args[0]
+            error_description = e_values.args[1]
+        else:
+            error_title = f"{e_values}"
+            error_description = "Oops! Something went wrong.\nTry again!"
+
+        embed_data = EmbedData()
+        embed_data.title = ":x:   {0}".format(error_title)
+        embed_data.description = "{0}".format(error_description)
+        embed_data.color = discord.Color.red()
+        await ctx.send(embed=create_embed(embed_data))
+
+        # display list of summoners
+        await display_current_list_of_summoners(ctx)
+
+
+@bot.command(name="list", help="Display list of summoner")
+async def display_current_list_of_summoners(ctx):
+    """For displaying current list of summoners"""
+
+    try:
+        # server id
+        server_id = str(ctx.guild.id)
+
+        # folder and path for data json
+        data_folder_path = get_file_path("data/")
+        json_path = data_folder_path + "data.json"
+
+        file_data = ""
+
+        if os.path.getsize(json_path) == 0 or not os.path.exists(json_path):
+            raise Exception
+
+        # get data from the json file and save to file data
+
+        with open(json_path, "r") as file:
+            file_data = json.load(file)
+
+        if not file_data[server_id]:
+            raise Exception
+
+        total_number_of_players = len(file_data[server_id])
+
+        # making embed for list of summoners
         embed_data = EmbedData()
         embed_data.title = "List of Summoners"
         embed_data.description = "** **"
         embed_data.color = discord.Color.dark_gray()
 
+        # for saving output str
         output_str = ""
 
         for count in range(len(file_data[server_id])):
@@ -264,24 +329,15 @@ async def add_summoner(ctx, *, message):
         )
 
         await ctx.send(embed=create_embed(embed_data))
+
+        await ctx.send(f"Total Number of Summoners: {total_number_of_players}")
+
     # pylint: disable=broad-except
-    except Exception as e_values:
-
-        if "404" in str(e_values):
-            error_title = "Invalid Summoner Name"
-            error_description = f"`{e_values.args[1]}` is not a valid name. \
-                \n\nAdding multiple summoners:\n `@{bot.user.name} add name1, name2`"
-        elif "Limit Exceeded" in str(e_values):
-            error_title = "Unable to Add"
-            error_description = f"{e_values.args[1]}"
-        else:
-            error_title = "Error"
-            error_description = "Oops! Something went wrong.\nTry again!"
-
+    except Exception:
         embed_data = EmbedData()
-        embed_data.title = ":x:   {0}".format(error_title)
-        embed_data.description = "{0}".format(error_description)
-        embed_data.color = discord.Color.red()
+        embed_data.title = ":warning:   No Summoners in the List"
+        embed_data.description = f"Please add summoner by `@{bot.user.name} add`"
+        embed_data.color = discord.Color.orange()
         await ctx.send(embed=create_embed(embed_data))
 
 
