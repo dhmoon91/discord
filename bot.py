@@ -529,6 +529,109 @@ async def display_teams(ctx):
         await ctx.send(embed=create_embed(embed_data))
 
 
+# pylint: disable=too-many-locals, too-many-branches, too-many-statements
+@bot.command(name="remove", help="Remove player(s) from the list")
+async def remove_summoner(ctx, *, message):
+    """Remove summoner(s) from list
+    and send  the list to the bot"""
+
+    try:
+        # typing indicator
+        async with ctx.typing():
+            await asyncio.sleep(1)
+
+        # converting the message into list of summoners
+        summoner_to_remove_input = message.split(",")
+
+        # Exception case: attempt to remove more than 10 players
+        if len(summoner_to_remove_input) > MAX_NUM_PLAYERS_TEAM:
+            raise Exception (
+                "Limit Exceeded",
+                "You have exceeded a limit of 10 summoners! \
+                \nPlease remove {0} less summoners!".format(
+                    MAX_NUM_PLAYERS_TEAM - len(summoner_to_remove_input)
+                )
+            )
+
+        # Exception case: data/data.json file does not exist
+        if not os.path.exists(json_path):
+            raise Exception (
+                "Limit Exceeded",
+                "There is no summoner(s) added in the game.\nPlease add summoner(s) first!"
+            )
+
+        # for importing data from json file
+        file_data = ""
+        # initializing server id to a variable
+        server_id = str(ctx.guild.id)
+
+        if os.path.getsize(json_path) > 0:
+            with open(json_path, "r") as file:
+                file_data = json.load(file)
+        else:
+            raise Exception (
+                "Limit Exceeded",
+                "There is no summoner(s) added in the game.\nPlease add summoner(s) first!"
+            )
+
+        players_to_remove = []
+        summoners_to_remove = []
+        if server_id in file_data:
+            for player_name in summoner_to_remove_input:
+                for player in file_data[server_id]:
+                    if normalize_name(player_name) == normalize_name(player["user_name"]):
+                        players_to_remove.append(player)
+                        summoners_to_remove.append(player_name)
+            for player in players_to_remove:
+                file_data[server_id].remove(player)
+            for player_name in summoners_to_remove:
+                summoner_to_remove_input.remove(player_name)
+            with open(json_path, "w") as file:
+                json.dump(file_data, file, indent=4)
+            # Exception case: unmatched summoner_to_remove identified
+            if len(summoner_to_remove_input) > 0:
+                raise Exception(
+                    "Unregistered Summoner(s)",
+                    "Summoners: {0} were not registered for the game".format(
+                        str(summoner_to_remove_input)
+                    )
+                )
+        else:
+            raise Exception(
+                "Limit Exceeded",
+                "There is no summoner(s) added in the game.\nPlease add summoner(s) first!"
+            )
+        # display list of summoners
+        await display_current_list_of_summoners(ctx)
+
+    # pylint: disable=broad-except
+    except Exception as e_values:
+        if "404" in str(e_values):
+            error_title = "Invalid Summoner Name"
+            error_description = f"`{e_values.args[1]}` is not a valid name. \
+                \n\nAdding multiple summoners:\n `@{bot.user.name} add name1, name2`"
+        elif "Limit Exceeded" in str(e_values) or "Unregistered Summoner(s)" in str(e_values):
+            error_title = e_values.args[0]
+            error_description = e_values.args[1]
+        else:
+            error_title = f"{e_values}"
+            error_description = "Oops! Something went wrong.\nTry again!"
+
+        embed_data = EmbedData()
+        embed_data.title = ":x:   {0}".format(error_title)
+        embed_data.description = "{0}".format(error_description)
+        embed_data.color = discord.Color.red()
+        await ctx.send(embed=create_embed(embed_data))
+
+        # display list of summoners
+        await display_current_list_of_summoners(ctx)
+
+
+def normalize_name(string):
+    """normalize name by changing to lower case and removing whitespaces"""
+    return string.lower().replace(" ","")
+
+
 @bot.event
 async def on_command_error(ctx, error):
     """Checks error and sends error message if exists"""
