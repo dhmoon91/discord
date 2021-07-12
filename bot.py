@@ -12,14 +12,14 @@ from dotenv import load_dotenv
 # saving df to image
 import dataframe_image as dfi
 
-# Discord
-import discord
-from discord.ext import commands
-
 # DB
 from sqlalchemy import create_engine
 from db.db import bind_engine, Session
 from db.models.summoners import Summoners
+
+# Discord
+import discord
+from discord.ext import commands
 
 # Riot util func.
 from riot import get_summoner_rank, previous_match, create_summoner_list, make_teams
@@ -451,12 +451,6 @@ async def display_teams(ctx):
 
         teams = make_teams(file_data[server_id])
 
-        # making embed for list of summoners
-        embed_data = EmbedData()
-        embed_data.title = "Teams"
-        embed_data.description = "** **"
-        embed_data.color = discord.Color.green()
-
         blue_team = teams[0]
         red_team = teams[1]
 
@@ -466,31 +460,58 @@ async def display_teams(ctx):
         # using enumerate due to pylint error
         for count, _ in enumerate(blue_team):
 
-            blue_team_output += "`{0}{1}` {2}\n".format(
-                blue_team[count]["tier_division"][0],
-                TIER_RANK_MAP.get(blue_team[count]["tier_rank_number"]),
-                blue_team[count]["formatted_user_name"],
+            blue_team_output += (
+                "`{0}{1}` {2}\n".format(
+                    blue_team[count]["tier_division"][0],
+                    TIER_RANK_MAP.get(blue_team[count]["tier_rank_number"]),
+                    blue_team[count]["formatted_user_name"],
+                )
+                # different formatting for uncommon tiers
+                if blue_team[count]["tier_division"] not in UNCOMMON_TIERS
+                else "`{0}` {1}\n".format(
+                    UNCOMMON_TIER_DISPLAY_MAP.get(blue_team[count]["tier_division"]),
+                    blue_team[count]["formatted_user_name"],
+                )
             )
 
-            red_team_output += "`{0}{1}` {2}\n".format(
-                red_team[count]["tier_division"][0],
-                TIER_RANK_MAP.get(red_team[count]["tier_rank_number"]),
-                red_team[count]["formatted_user_name"],
+            red_team_output += (
+                "`{0}{1}` {2}\n".format(
+                    red_team[count]["tier_division"][0],
+                    TIER_RANK_MAP.get(red_team[count]["tier_rank_number"]),
+                    red_team[count]["formatted_user_name"],
+                )
+                # different formatting for uncommon tiers
+                if red_team[count]["tier_division"] not in UNCOMMON_TIERS
+                else "`{0}` {1}\n".format(
+                    UNCOMMON_TIER_DISPLAY_MAP.get(red_team[count]["tier_division"]),
+                    red_team[count]["formatted_user_name"],
+                )
             )
 
-        embed_data.fields = []
-        embed_data.fields.append(
-            {"name": "BLUE", "value": blue_team_output, "inline": True}
-        )
-
-        embed_data.fields.append(
-            {"name": "RED", "value": red_team_output, "inline": True}
-        )
-        await ctx.send(embed=create_embed(embed_data))
+        for team_name in ["blue", "red"]:
+            embed_data = EmbedData()
+            embed_data.title = f"TEAM {team_name.upper()}"
+            embed_data.description = "** **"
+            embed_data.color = (
+                discord.Color.blue() if team_name == "blue" else discord.Color.red()
+            )
+            file = discord.File(get_file_path(f"images/{team_name}-minion.png"))
+            embed_data.thumbnail = f"attachment://{team_name}-minion.png"
+            embed_data.fields = []
+            embed_data.fields.append(
+                {
+                    "name": "Summoners" + " " * 10,
+                    "value": blue_team_output
+                    if team_name == "blue"
+                    else red_team_output,
+                    "inline": True,
+                }
+            )
+            await ctx.send(file=file, embed=create_embed(embed_data))
 
     # pylint: disable=broad-except
     except Exception as e_values:
-        if str(e_values) == "NOT ENOUGH PLAYERS" or "NO SUMMONERS IN THE LIST":
+        if str(e_values) in ["NOT ENOUGH PLAYERS", "NO SUMMONERS IN THE LIST"]:
             error_title = e_values.args[0]
             error_description = f"There are not enough players to make teams \
                 \n\nTo add a summoner:\n`@{bot.user.name} add summoner_name` \
