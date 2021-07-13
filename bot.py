@@ -90,8 +90,8 @@ async def help_command(ctx):
     except Exception:
         err_embed = discord.Embed(
             title="Error",
-            description="Oops! Something went wrong.\n\nPlease try again!\
-              \n\n Please type  `rank --help`  to see how to use",
+            description="Oops! Something went wrong.\
+              \n\n Please type  `rank --help`  to see how to use and try again!",
             color=discord.Color.red(),
         )
 
@@ -159,8 +159,8 @@ async def get_rank(ctx, *, name: str):  # using * for get a summoner name with s
               \n\n Please type  `rank --help`  to see how to use"
         else:
             error_title = "Error"
-            error_description = "Oops! Something went wrong.\n\nPlease try again!\
-              \n\n Please type  `rank --help`  to see how to use"
+            error_description = "Oops! Something went wrong.\
+              \n\nPlease type  `rank --help`  to see how to use and tyr again!"
 
         embed_data = EmbedData()
         embed_data.title = ":x:   {0}".format(error_title)
@@ -196,8 +196,8 @@ async def get_last_match(ctx, *, name: str):
 
         else:
             error_title = "Error"
-            error_description = "Oops! Something went wrong.\n\nPlease try again!\
-              \n\n Please type  `last_match --help`  to see how to use"
+            error_description = "Oops! Something went wrong.\
+              \n\nPlease type  `last_match --help`  to see how to use and try again!"
 
         embed_data = EmbedData()
         embed_data.title = ":x:   {0}".format(error_title)
