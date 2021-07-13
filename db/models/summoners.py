@@ -1,9 +1,15 @@
+"""
+summoners model mapping
+
+"""
+import datetime
 from sqlalchemy import Column, Integer, String, DateTime
 from ..db import Base
-import datetime
 
 
 class Summoners(Base):
+    """summoners model definition"""
+
     __tablename__ = "summoners"
 
     id = Column(Integer, primary_key=True)

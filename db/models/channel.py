@@ -1,9 +1,12 @@
+"""channels model mapping"""
+import datetime
 from sqlalchemy import Column, Integer, String, DateTime
 from ..db import Base
-import datetime
 
 
 class Channel(Base):
+    """channels model definition"""
+
     __tablename__ = "channels"
 
     channe_id = Column(Integer, primary_key=True)

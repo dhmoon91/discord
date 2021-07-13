@@ -9,13 +9,13 @@ import asyncio
 
 from dotenv import load_dotenv
 
+# saving df to image
+import dataframe_image as dfi
+
 # DB
 from sqlalchemy import create_engine
 from db.db import bind_engine, Session
 from db.models.summoners import Summoners
-
-# saving df to image
-import dataframe_image as dfi
 
 # Discord
 import discord
@@ -37,7 +37,7 @@ load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 LOCAL_BOT_PREFIX = os.getenv("LOCAL_BOT_PREFIX")
 
-# TODO: differ by env.
+# differ by env.
 # Init DB
 engine = create_engine("postgresql://admin_bot:test@localhost/bot_dev")
 bind_engine(engine)
