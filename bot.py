@@ -9,6 +9,10 @@ import asyncio
 
 from dotenv import load_dotenv
 
+# DB
+from sqlalchemy import create_engine
+from db.db import bind_engine, Session
+from db.models.summoners import Summoners
 
 # saving df to image
 import dataframe_image as dfi
@@ -33,6 +37,11 @@ load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 LOCAL_BOT_PREFIX = os.getenv("LOCAL_BOT_PREFIX")
 
+# TODO: differ by env.
+# Init DB
+engine = create_engine("postgresql://admin_bot:test@localhost/bot_dev")
+bind_engine(engine)
+session = Session()
 
 # ADD help_command attribute to remove default help command
 bot = commands.Bot(
@@ -102,7 +111,20 @@ async def help_command(ctx):
 async def get_rank(ctx, name: str):
     """Sends the summoner's rank information to the bot"""
     try:
+        channel_id = str(ctx.guild.id)
         summoner_info = get_summoner_rank(name)
+        summoner_data = Summoners(
+            channel_id,
+            "NA",
+            summoner_info["puuid"],
+            summoner_info["tier_division"],
+            summoner_info["tier_rank"],
+            summoner_info["solo_win"],
+            summoner_info["solo_loss"],
+        )
+        # Create db row.
+        session.add(summoner_data)
+        session.commit()
 
         embed_data = EmbedData()
         embed_data.title = "Solo/Duo Rank"

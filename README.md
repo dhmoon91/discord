@@ -36,6 +36,19 @@ pre-commit install --hook-type pre-push
 
 - Add `LOCAL_BOT_PREFIX= ""` to .env with desired prefix between the double quotes
 
+9. Install Postgresql server 9.6.2 or up brew install postgresql and start it brew services start postgresql
+Initialize development and test databases as described below:
+Use following command to bootstrap dev and test databases
+```
+$ psql postgres
+postgres=# CREATE USER admin_bot WITH SUPERUSER PASSWORD 'test';
+postgres=# CREATE DATABASE bot_dev OWNER admin_bot;
+```
+
+// set up tables.
+from bot import engine
+from bot import Base
+Base.metadata.create_all(engine)
 ## Packages:
 
 **Pydash**

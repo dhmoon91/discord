@@ -42,7 +42,6 @@ def get_summoner_rank(name: str):
 
     # Find solo queue data.
     solo_rank_stat = pydash.find(ranked_stat, {"queueType": "RANKED_SOLO_5x5"})
-
     tier_division = solo_rank_stat["tier"]
     tier_rank = solo_rank_stat["rank"]
     tier = " ".join([tier_division, tier_rank])
@@ -60,6 +59,9 @@ def get_summoner_rank(name: str):
         "tier": tier,
         "solo_win": solo_rank_stat["wins"],
         "solo_loss": solo_rank_stat["losses"],
+        "puuid": user["puuid"],
+        "tier_division": solo_rank_stat["tier"],
+        "tier_rank": solo_rank_stat["rank"],
     }
     return summoner_profile
 
