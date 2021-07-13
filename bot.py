@@ -27,7 +27,7 @@ from db.models.summoners import Summoners
 from riot import get_summoner_rank, previous_match, create_summoner_list, make_teams
 
 from utils.embed_object import EmbedData
-from utils.utils import create_embed, get_file_path
+from utils.utils import create_embed, get_file_path, normalize_name
 from utils.constants import (
     TIER_RANK_MAP,
     MAX_NUM_PLAYERS_TEAM,
@@ -547,8 +547,8 @@ async def remove_summoner(ctx, *, message):
         if len(summoner_to_remove_input) > MAX_NUM_PLAYERS_TEAM:
             raise Exception (
                 "Limit Exceeded",
-                "You have exceeded a limit of 10 summoners! \
-                \nPlease remove {0} less summoners!".format(
+                "You tried to remove more than 10 summoners! \
+                \nPlease remove {0} less summoners or consider using `clear` command".format(
                     MAX_NUM_PLAYERS_TEAM - len(summoner_to_remove_input)
                 )
             )
@@ -606,11 +606,7 @@ async def remove_summoner(ctx, *, message):
 
     # pylint: disable=broad-except
     except Exception as e_values:
-        if "404" in str(e_values):
-            error_title = "Invalid Summoner Name"
-            error_description = f"`{e_values.args[1]}` is not a valid name. \
-                \n\nAdding multiple summoners:\n `@{bot.user.name} add name1, name2`"
-        elif "Limit Exceeded" in str(e_values) or "Unregistered Summoner(s)" in str(e_values):
+        if "Limit Exceeded" in str(e_values) or "Unregistered Summoner(s)" in str(e_values):
             error_title = e_values.args[0]
             error_description = e_values.args[1]
         else:
@@ -625,11 +621,6 @@ async def remove_summoner(ctx, *, message):
 
         # display list of summoners
         await display_current_list_of_summoners(ctx)
-
-
-def normalize_name(string):
-    """normalize name by changing to lower case and removing whitespaces"""
-    return string.lower().replace(" ","")
 
 
 # pylint: disable=too-many-locals, too-many-branches, too-many-statements
