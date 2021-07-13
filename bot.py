@@ -632,6 +632,44 @@ def normalize_name(string):
     return string.lower().replace(" ","")
 
 
+# pylint: disable=too-many-locals, too-many-branches, too-many-statements
+@bot.command(name="clear", help="Clear player(s) from the list")
+async def clear_list_of_summoners(ctx):
+    """Clear out summoners from the list"""
+
+    try:
+        # for importing data from json file
+        file_data = ""
+        # initializing server id to a variable
+        server_id = str(ctx.guild.id)
+
+        if os.path.getsize(json_path) > 0:
+            with open(json_path, "r") as file:
+                file_data = json.load(file)
+
+        if server_id in file_data.keys():
+            file_data[server_id].clear()
+            with open(json_path, "w") as file:
+                json.dump(file_data, file, indent=4)
+
+        # display list of summoners
+        await display_current_list_of_summoners(ctx)
+
+    # pylint: disable=broad-except
+    except Exception as e_values:
+        error_title = f"{e_values}"
+        error_description = "Oops! Something went wrong.\nTry again!"
+
+        embed_data = EmbedData()
+        embed_data.title = ":x:   {0}".format(error_title)
+        embed_data.description = "{0}".format(error_description)
+        embed_data.color = discord.Color.red()
+        await ctx.send(embed=create_embed(embed_data))
+
+        # display list of summoners
+        await display_current_list_of_summoners(ctx)
+
+
 @bot.event
 async def on_command_error(ctx, error):
     """Checks error and sends error message if exists"""
