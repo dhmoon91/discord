@@ -89,14 +89,28 @@ async def on_member_join(member):
     name="help",
     help="Displays the syntax and the description of all the commands.",
 )
-async def help_command(ctx):
+async def help_command(ctx, name=None):
     """Help command outputs description about all the commands"""
     try:
+        # typing indicator
+        async with ctx.typing():
+            await asyncio.sleep(1)
+
+        list_commands = []  # make dictionary to store all commands
+        for command in bot.commands:
+            # check if the user input specific command after help
+            if command.name == name:
+                return await command(ctx)
+            list_commands.append(
+                {"command": f"{command.name}", "description": f"{command.help}"}
+            )
+        # sort commands alphabetically
+        list_commands = sorted(list_commands, key=lambda x: x["command"])
+
         embed_data = EmbedData()
         embed_data.title = f"How to use {bot.user.name}"
-        embed_data.description = (
-            f"`All Data from NA server`\n\n <@!{bot.user.id}> <command>"
-        )
+        embed_data.description = f"`All Data from NA server`\n\n <@!{bot.user.id}> <command> --help\
+              \n\nPlease type `--help` to see how to use the command"
         embed_data.color = discord.Color.gold()
 
         # ADD thumbnail (Image can be changed whatever we want. eg.our logo)
@@ -105,13 +119,16 @@ async def help_command(ctx):
         embed_data.fields = []
         embed_data.fields.append({"name": "** **", "value": "** **", "inline": False})
 
-        for command in bot.commands:
-            if not str(command).startswith("help"):
+        for command in list_commands:
+            if not command["command"].startswith("help"):
                 embed_data.fields.append(
                     {
                         "name": "** **",
-                        "value": f"<@!{bot.user.id}> **{command.name} summoner_name** \n \
-                            {command.help}",
+                        "value": "<@!{}> **{} summoner_name**\n{}".format(
+                            f"{bot.user.id}",
+                            command["command"],
+                            command["description"],
+                        ),
                         "inline": False,
                     }
                 )
@@ -129,13 +146,40 @@ async def help_command(ctx):
         await ctx.send(embed=err_embed)
 
 
+# =================
 @bot.command(name="rank", help="Displays the information about the summoner.")
-async def get_rank(ctx, *, name: str):  # using * for get a summoner name with space
+async def get_rank(ctx, name="--help"):  # set name attribute to default help command
     """Sends the summoner's rank information to the bot"""
     try:
         # typing indicator
         async with ctx.typing():
             await asyncio.sleep(1)
+
+        # displays the get_rank's help command
+        if name == "--help":
+            embed_data = EmbedData()
+            embed_data.title = f"How to use {get_rank.name} command"
+            embed_data.description = (
+                "`All Data from NA server`\n\n <@!{0}> **{1} summoner_name**"
+            ).format(bot.user.id, get_rank.name)
+            embed_data.color = discord.Color.blurple()
+
+            embed_data.fields = []
+
+            # pylint: disable=line-too-long
+            embed_data.fields.append(
+                {
+                    "name": "** **",
+                    "value": "{0}\n\n{1}\n\n{2}".format(
+                        "This command displays the information about the summoner.",
+                        "The information includes the summoner's name, rank, total games played and the win rate.",
+                        f"__NOTE__:   **{get_rank.name}** command only accepts one summoner name.",
+                    ),
+                    "inline": False,
+                }
+            )
+
+            return await ctx.send(embed=create_embed(embed_data))
 
         summoner_info = get_summoner_rank(name)
 
@@ -216,7 +260,7 @@ async def get_rank(ctx, *, name: str):  # using * for get a summoner name with s
     name="last_match",
     help="Displays the information about the latest game of the summoner.",
 )
-async def get_last_match(ctx, *, name: str):
+async def get_last_match(ctx, name="--help"):
     """Sends the summoner's last match information to the bot"""
     try:
 
@@ -235,6 +279,43 @@ async def get_last_match(ctx, *, name: str):
             # file=file
         )
         # os.remove("df_styled.png")
+        # typing indicator
+        async with ctx.typing():
+            await asyncio.sleep(1)
+
+        # displays the get_last_match's help command
+        if name == "--help":
+            embed_data = EmbedData()
+            embed_data.title = f"How to use {get_last_match.name} command"
+            embed_data.description = (
+                "`All Data from NA server`\n\n <@!{0}> **{1} summoner_name**"
+            ).format(bot.user.id, get_last_match.name)
+            embed_data.color = discord.Color.blurple()
+
+            embed_data.fields = []
+
+            # pylint: disable=line-too-long
+            embed_data.fields.append(
+                {
+                    "name": "** **",
+                    "value": "{0}\n\n{1}\n\n{2}".format(
+                        "This command displays the information about the latest game of the summoner.",
+                        "The information includes the name of all of the summoners, champions played, K/D/A and damage dealt",
+                        f"__NOTE__:   **{get_last_match.name}** command only accepts one summoner name.",
+                    ),
+                    "inline": False,
+                }
+            )
+
+            return await ctx.send(embed=create_embed(embed_data))
+
+        last_match_info = previous_match(name)
+        dfi.export(last_match_info, "df_styled.png")
+        file = discord.File("df_styled.png")
+        embed = discord.Embed()
+        embed.set_image(url="attachment://df_styled.png")
+        await ctx.send(embed=embed, file=file)
+        os.remove("df_styled.png")
 
     # pylint: disable=broad-except
     except Exception as e_values:
@@ -259,8 +340,7 @@ async def get_last_match(ctx, *, name: str):
 
 
 @bot.command(name="add", help="Add the players to the list")
-# pylint: disable=too-many-locals, too-many-branches, too-many-statements
-async def add_summoner(ctx, *, message):
+async def add_summoner(ctx, *, message="--help"):
     """Writes list of summoners to local
     json file and sends the list to the bot"""
 
@@ -268,6 +348,38 @@ async def add_summoner(ctx, *, message):
         # typing indicator
         async with ctx.typing():
             await asyncio.sleep(1)
+
+        # displays the add_summoner's help command
+        if message == "--help":
+            embed_data = EmbedData()
+            embed_data.title = f"How to use {add_summoner.name} command"
+            embed_data.description = (
+                "`All Data from NA server`\n\n <@!{0}> **{1} summoner_name**"
+            ).format(bot.user.id, add_summoner.name)
+            embed_data.color = discord.Color.blurple()
+
+            embed_data.fields = []
+
+            # pylint: disable=line-too-long
+            embed_data.fields.append(
+                {
+                    "name": "** **",
+                    "value": "{0}\n\n{1}\n\n{2}".format(
+                        "This command displays the list of summoners on standby.",
+                        "The information includes a summoner's name, tier division, and rank number.",
+                        f"Adding multiple summoners: `@{bot.user.name} add name1, name2`",
+                    ),
+                    "inline": False,
+                }
+            )
+
+            return await ctx.send(embed=create_embed(embed_data))
+
+        # create a directory containing json file to store data for added summoners
+        if not os.path.exists(json_path):
+            os.makedirs(data_folder_path, exist_ok=True)
+            with open(json_path, "w"):
+                pass
 
         # converting the message into list of summoners
         # Split by ',' and remove leading/trailling white spaces.
@@ -390,11 +502,40 @@ async def add_summoner(ctx, *, message):
         await display_current_list_of_summoners(ctx)
 
 
-# TODO Refactor into util function.
-@bot.command(name="list", help="Display list of summoner")
-async def display_current_list_of_summoners(ctx):
+@bot.command(name="list", help="Display a list of summoner")
+async def display_current_list_of_summoners(ctx, name=None):
     """For displaying current list of summoners"""
     try:
+        # typing indicator
+        async with ctx.typing():
+            await asyncio.sleep(1)
+
+        # displays the display_current_list_of_summoners's help command
+        if name is not None:
+            embed_data = EmbedData()
+            embed_data.title = (
+                f"How to use {display_current_list_of_summoners.name} command"
+            )
+            embed_data.description = (
+                "`All Data from NA server`\n\n <@!{0}> **{1}**"
+            ).format(bot.user.id, display_current_list_of_summoners.name)
+            embed_data.color = discord.Color.blurple()
+
+            embed_data.fields = []
+            # pylint: disable=line-too-long
+            embed_data.fields.append(
+                {
+                    "name": "** **",
+                    "value": "{0}\n\n{1}".format(
+                        "This command displays a list of summoner(s) on standby.",
+                        "The information includes the summoner's name, tier division, and rank number.",
+                    ),
+                    "inline": False,
+                }
+            )
+
+            return await ctx.send(embed=create_embed(embed_data))
+
         # server id
         server_id = str(ctx.guild.id)
 
