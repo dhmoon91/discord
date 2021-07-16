@@ -575,17 +575,16 @@ async def remove_summoner(ctx, *, message):
             )
 
         players_to_remove = []
-        summoners_to_remove = []
         if server_id in file_data:
             for player_name in summoner_to_remove_input:
                 for player in file_data[server_id]:
                     if normalize_name(player_name) == normalize_name(player["user_name"]):
+                        player["user_name_input"]=player_name
                         players_to_remove.append(player)
-                        summoners_to_remove.append(player_name)
+                        break
             for player in players_to_remove:
+                summoner_to_remove_input.remove(player["user_name_input"])
                 file_data[server_id].remove(player)
-            for player_name in summoners_to_remove:
-                summoner_to_remove_input.remove(player_name)
             with open(json_path, "w") as file:
                 json.dump(file_data, file, indent=4)
             # Exception case: unmatched summoner_to_remove identified
