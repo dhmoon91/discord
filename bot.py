@@ -25,9 +25,11 @@ from utils.embed_object import EmbedData
 from utils.utils import create_embed, get_file_path
 from utils.constants import TIER_RANK_MAP, MAX_NUM_PLAYERS_TEAM
 
+
 intents = discord.Intents.default()
 # pylint: disable=assigning-non-slot
 intents.members = True  # Subscribe to the privileged members intent.
+
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
@@ -93,13 +95,21 @@ async def help_command(ctx):
                     }
                 )
         await ctx.send(embed=create_embed(embed_data))
-        # pylint: disable=broad-except
-    except Exception as e_values:
-        print(e_values)
+
+    # pylint: disable=broad-except
+    except Exception:
+        err_embed = discord.Embed(
+            title="Error",
+            description="Oops! Something went wrong.\
+              \n\n Please type  `rank --help`  to see how to use and try again!",
+            color=discord.Color.red(),
+        )
+
+        await ctx.send(embed=err_embed)
 
 
 @bot.command(name="rank", help="Displays the information about the summoner.")
-async def get_rank(ctx, name: str):
+async def get_rank(ctx, *, name: str):  # using * for get a summoner name with space
     """Sends the summoner's rank information to the bot"""
     try:
         summoner_info = get_summoner_rank(name)
@@ -148,16 +158,33 @@ async def get_rank(ctx, name: str):
             }
         )
         await ctx.send(file=file, embed=create_embed(embed_data))
-        # pylint: disable=broad-except
+
+    # pylint: disable=broad-except
     except Exception as e_values:
-        print(e_values)
+        # 404 error means Data not found in API
+        if "404" in str(e_values):
+            error_title = f'Summoner "{name}" is not found'
+            error_description = f"Please check the summoner name agian \n \
+              \n __*NOTE*__:   **{get_rank.name}** command only accepts one summoner name.\
+              \n\n Please type  `rank --help`  to see how to use"
+        else:
+            error_title = "Error"
+            error_description = "Oops! Something went wrong.\
+              \n\nPlease type  `rank --help`  to see how to use and tyr again!"
+
+        embed_data = EmbedData()
+        embed_data.title = ":x:   {0}".format(error_title)
+        embed_data.description = "{0}".format(error_description)
+        embed_data.color = discord.Color.red()
+
+        await ctx.send(embed=create_embed(embed_data))
 
 
 @bot.command(
     name="last_match",
     help="Displays the information about the latest game of the summoner.",
 )
-async def get_last_match(ctx, name: str):
+async def get_last_match(ctx, *, name: str):
     """Sends the summoner's last match information to the bot"""
     try:
         last_match_info = previous_match(name)
@@ -167,9 +194,27 @@ async def get_last_match(ctx, name: str):
         embed.set_image(url="attachment://df_styled.png")
         await ctx.send(embed=embed, file=file)
         os.remove("df_styled.png")
-        # pylint: disable=broad-except
+
+    # pylint: disable=broad-except
     except Exception as e_values:
-        print(e_values)
+        # 404 error means Data not found in API
+        if "404" in str(e_values):
+            error_title = f'Summoner "{name}" is not found'
+            error_description = f"Please check the summoner name agian \n \
+              \n __*NOTE*__ :   **{get_last_match.name}** command only accepts one summoner name.\
+              \n\n Please type  `last_match --help`  to see how to use"
+
+        else:
+            error_title = "Error"
+            error_description = "Oops! Something went wrong.\
+              \n\nPlease type  `last_match --help`  to see how to use and try again!"
+
+        embed_data = EmbedData()
+        embed_data.title = ":x:   {0}".format(error_title)
+        embed_data.description = "{0}".format(error_description)
+        embed_data.color = discord.Color.red()
+
+        await ctx.send(embed=create_embed(embed_data))
 
 
 # pylint: disable=too-many-locals, too-many-branches, too-many-statements
