@@ -6,6 +6,7 @@ Bot codes
 import os
 import json
 import asyncio
+import pydash
 
 from dotenv import load_dotenv
 
@@ -574,25 +575,25 @@ async def remove_summoner(ctx, *, message):
                 "There is no summoner(s) added in the game.\nPlease add summoner(s) first!"
             )
 
-        players_to_remove = []
+        unmatched_summoner_name = []
         if server_id in file_data:
             for player_name in summoner_to_remove_input:
-                for player in file_data[server_id]:
-                    if normalize_name(player_name) == normalize_name(player["user_name"]):
-                        player["user_name_input"]=player_name
-                        players_to_remove.append(player)
-                        break
-            for player in players_to_remove:
-                summoner_to_remove_input.remove(player["user_name_input"])
-                file_data[server_id].remove(player)
+                # pylint: disable=cell-var-from-loop
+                matched_summoner = pydash.find(file_data[server_id],
+                    lambda x: normalize_name(x["user_name"])==normalize_name(player_name))
+                if pydash.predicates.is_empty(matched_summoner):
+                    unmatched_summoner_name.append(player_name)
+                else:
+                    file_data[server_id].remove(matched_summoner)
+                    matched_summoner["user_name_input"]=player_name
             with open(json_path, "w") as file:
                 json.dump(file_data, file, indent=4)
-            # Exception case: unmatched summoner_to_remove identified
-            if len(summoner_to_remove_input) > 0:
+            # Exception case: unmatched_summoner_name identified
+            if len(unmatched_summoner_name) > 0:
                 raise Exception(
                     "Unregistered Summoner(s)",
                     "Summoners: {0} were not registered for the game".format(
-                        str(summoner_to_remove_input)
+                        str(unmatched_summoner_name)
                     )
                 )
         else:
