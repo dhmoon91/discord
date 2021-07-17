@@ -38,28 +38,40 @@ def get_summoner_rank(name: str):
         + f"cdn/{version}/img/profileicon/{profileiconid}.png"
     )
 
-    user_name = user["name"]
-
     # Find solo queue data.
-    solo_rank_stat = pydash.find(ranked_stat, {"queueType": "RANKED_SOLO_5x5"})
+    if len(ranked_stat) > 0:
+        solo_rank_stat = pydash.find(ranked_stat, {"queueType": "RANKED_SOLO_5x5"})
+        tier_division = solo_rank_stat["tier"]
+        tier_rank = solo_rank_stat["rank"]
+        solo_win = solo_rank_stat["wins"]
+        solo_loss = solo_rank_stat["losses"]
+        league_points = solo_rank_stat["leaguePoints"]
 
-    tier_division = solo_rank_stat["tier"]
-    tier_rank = solo_rank_stat["rank"]
+    # If summoner does not have any rank information
+    else:
+        tier_division = "UNRANKED"
+        tier_rank = "I"
+        solo_win = 0
+        solo_loss = 0
+        league_points = 0
+
     tier = " ".join([tier_division, tier_rank])
 
     # Get aboslute path to emblem file.
     emblem_path = get_file_path(
         f"ranked-emblems/Emblem_{tier_division.capitalize()}.png"
     )
+
     summoner_profile = {
-        "user_name": user_name,
+        "user_name": user["name"],
         "summoner_icon_image_url": summoner_icon_image_url,
         "summoner_level": user["summonerLevel"],
         "tier_image_path": emblem_path,
         "tier_image_name": f"Emblem_{tier_division.capitalize()}.png",
         "tier": tier,
-        "solo_win": solo_rank_stat["wins"],
-        "solo_loss": solo_rank_stat["losses"],
+        "solo_win": solo_win,
+        "solo_loss": solo_loss,
+        "league_points": league_points,
     }
     return summoner_profile
 
@@ -150,11 +162,13 @@ def create_summoner_list(players_list: list, server_id: str):
 
                 tier_division = solo_rank_stat["tier"]
                 tier_rank_number = solo_rank_stat["rank"]
+                league_points = solo_rank_stat["leaguePoints"]
 
             # set the tier to unranked if no ranked data was found
             else:
                 tier_division = "UNRANKED"
-                tier_rank_number = "R"
+                tier_rank_number = "I"
+                league_points = 0
 
             members_to_add[server_id].append(
                 {
@@ -162,6 +176,7 @@ def create_summoner_list(players_list: list, server_id: str):
                     "formatted_user_name": user_name,
                     "tier_division": tier_division,
                     "tier_rank_number": tier_rank_number,
+                    "league_points": league_points,
                 }
             )
 

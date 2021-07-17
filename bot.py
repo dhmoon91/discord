@@ -23,7 +23,12 @@ from riot import get_summoner_rank, previous_match, create_summoner_list
 
 from utils.embed_object import EmbedData
 from utils.utils import create_embed, get_file_path
-from utils.constants import TIER_RANK_MAP, MAX_NUM_PLAYERS_TEAM
+from utils.constants import (
+    TIER_RANK_MAP,
+    MAX_NUM_PLAYERS_TEAM,
+    UNCOMMON_TIERS,
+    UNCOMMON_TIER_DISPLAY_MAP,
+)
 
 
 intents = discord.Intents.default()
@@ -116,9 +121,8 @@ async def get_rank(ctx, *, name: str):  # using * for get a summoner name with s
 
         embed_data = EmbedData()
         embed_data.title = "Solo/Duo Rank"
-        embed_data.description = (
-            f"`All Data from NA server`\n\n <@!{bot.user.id}> <command>"
-        )
+
+        # embed_data.description = f"<@!{bot.user.id}> <command>"
         embed_data.color = discord.Color.dark_gray()
 
         # Add author, thumbnail, fields, and footer to the embed
@@ -141,22 +145,31 @@ async def get_rank(ctx, *, name: str):  # using * for get a summoner name with s
 
         # Setting variables for summoner information to display as field
         summoner_total_game = summoner_info["solo_win"] + summoner_info["solo_loss"]
-        solo_rank_win_percentage = int(
-            summoner_info["solo_win"] / summoner_total_game * 100
+
+        # Due to zero division error, need to handle situation where total games are zero
+        if summoner_total_game == 0:
+            solo_rank_win_percentage = 0
+        else:
+            solo_rank_win_percentage = int(
+                summoner_info["solo_win"] / summoner_total_game * 100
+            )
+
+        embed_data.description = "**{0[tier]}**   {0[league_points]}LP \
+                    \nTotal Games Played: {1}\n{0[solo_win]}W {0[solo_loss]}L {2}%".format(
+            summoner_info,
+            summoner_total_game,
+            solo_rank_win_percentage,
         )
 
         embed_data.fields = []
         embed_data.fields.append(
             {
-                "name": "{0[tier]}".format(summoner_info),
-                "value": "Total Games Played: {1}\n{0[solo_win]}W {0[solo_loss]}L {2}%".format(
-                    summoner_info,
-                    summoner_total_game,
-                    solo_rank_win_percentage,
-                ),
+                "name": "** **",
+                "value": "`All Data from NA server`",
                 "inline": False,
             }
         )
+
         await ctx.send(file=file, embed=create_embed(embed_data))
 
     # pylint: disable=broad-except
@@ -359,11 +372,19 @@ async def display_current_list_of_summoners(ctx):
 
         for count in range(len(file_data[server_id])):
 
-            output_str += "`{0}{1}` {2}\n".format(
-                file_data[server_id][count]["tier_division"][0],
-                TIER_RANK_MAP.get(file_data[server_id][count]["tier_rank_number"]),
-                file_data[server_id][count]["formatted_user_name"],
-            )
+            if file_data[server_id][count]["tier_division"] in UNCOMMON_TIERS:
+                output_str += "`{0}` {1}\n".format(
+                    UNCOMMON_TIER_DISPLAY_MAP.get(
+                        file_data[server_id][count]["tier_division"]
+                    ),
+                    file_data[server_id][count]["formatted_user_name"],
+                )
+            else:
+                output_str += "`{0}{1}` {2}\n".format(
+                    file_data[server_id][count]["tier_division"][0],
+                    TIER_RANK_MAP.get(file_data[server_id][count]["tier_rank_number"]),
+                    file_data[server_id][count]["formatted_user_name"],
+                )
 
         embed_data.fields = []
         embed_data.fields.append(
