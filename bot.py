@@ -370,19 +370,20 @@ async def display_current_list_of_summoners(ctx):
 
         for count in range(len(file_data[server_id])):
 
-            if file_data[server_id][count]["tier_division"] in UNCOMMON_TIERS:
-                output_str += "`{0}` {1}\n".format(
+            output_str += (
+                "`{0}` {1}\n".format(
                     UNCOMMON_TIER_DISPLAY_MAP.get(
                         file_data[server_id][count]["tier_division"]
                     ),
                     file_data[server_id][count]["formatted_user_name"],
                 )
-            else:
-                output_str += "`{0}{1}` {2}\n".format(
+                if file_data[server_id][count]["tier_division"] in UNCOMMON_TIERS
+                else "`{0}{1}` {2}\n".format(
                     file_data[server_id][count]["tier_division"][0],
                     TIER_RANK_MAP.get(file_data[server_id][count]["tier_rank_number"]),
                     file_data[server_id][count]["formatted_user_name"],
                 )
+            )
 
         embed_data.fields = []
         embed_data.fields.append(
