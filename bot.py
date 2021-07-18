@@ -12,11 +12,6 @@ from dotenv import load_dotenv
 # saving df to image
 import dataframe_image as dfi
 
-# DB
-from sqlalchemy import create_engine
-from db.db import bind_engine, Session
-from db.models.summoners import Summoners
-
 # Discord
 import discord
 from discord.ext import commands
@@ -24,6 +19,10 @@ from discord.ext import commands
 # Riot util func.
 from riot import get_summoner_rank, previous_match, create_summoner_list
 
+# DB
+from sqlalchemy import create_engine
+from db.db import bind_engine, Session
+from db.models.summoners import Summoners
 
 from utils.embed_object import EmbedData
 from utils.utils import create_embed, get_file_path
