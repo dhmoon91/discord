@@ -122,7 +122,6 @@ async def get_rank(ctx, *, name: str):  # using * for get a summoner name with s
         embed_data = EmbedData()
         embed_data.title = "Solo/Duo Rank"
 
-        # embed_data.description = f"<@!{bot.user.id}> <command>"
         embed_data.color = discord.Color.dark_gray()
 
         # Add author, thumbnail, fields, and footer to the embed
@@ -147,12 +146,11 @@ async def get_rank(ctx, *, name: str):  # using * for get a summoner name with s
         summoner_total_game = summoner_info["solo_win"] + summoner_info["solo_loss"]
 
         # Due to zero division error, need to handle situation where total games are zero
-        if summoner_total_game == 0:
-            solo_rank_win_percentage = 0
-        else:
-            solo_rank_win_percentage = int(
-                summoner_info["solo_win"] / summoner_total_game * 100
-            )
+        solo_rank_win_percentage = (
+            0
+            if summoner_total_game == 0
+            else int(summoner_info["solo_win"] / summoner_total_game * 100)
+        )
 
         embed_data.description = "**{0[tier]}**   {0[league_points]}LP \
                     \nTotal Games Played: {1}\n{0[solo_win]}W {0[solo_loss]}L {2}%".format(
