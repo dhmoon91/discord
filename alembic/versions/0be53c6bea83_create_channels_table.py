@@ -5,6 +5,7 @@ Revises: 82c39910d8dd
 Create Date: 2021-07-18 05:24:14.633494
 
 """
+# pylint: disable-all
 import datetime
 from alembic import op
 from sqlalchemy import Column, Integer, String, DateTime

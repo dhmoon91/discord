@@ -8,6 +8,13 @@ Create Date: 2021-07-18 04:43:12.417768
 import datetime
 from alembic import op
 from sqlalchemy import Column, Integer, String, DateTime
+import enum
+
+# pylint: disable-all
+class RegionEnum(enum.Enum):
+    NA = 1
+    KR = 2
+    three = 3
 
 
 # revision identifiers, used by Alembic.
