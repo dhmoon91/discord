@@ -9,7 +9,7 @@ class Channels(Base):
 
     __tablename__ = "channels"
 
-    channe_id = Column(Integer, primary_key=True)
+    channel_id = Column(Integer, primary_key=True)
     region = Column(String(20))
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(
