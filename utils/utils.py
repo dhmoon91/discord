@@ -41,6 +41,9 @@ def create_embed(embed_object):
         if hasattr(embed_object, "thumbnail"):
             embed.set_thumbnail(url=f"{embed_object.thumbnail}")
 
+        if hasattr(embed_object, "footer"):
+            embed.set_footer(text=f"{embed_object.footer}")
+
         if hasattr(embed_object, "fields"):
             for field in embed_object.fields:
                 embed.add_field(

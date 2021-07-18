@@ -1,6 +1,7 @@
 node_modules
 .vscode/
 .env
+.idea
 **/__pycache__
 package-lock.json
 data/
