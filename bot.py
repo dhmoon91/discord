@@ -195,7 +195,6 @@ async def get_last_match(ctx, name: str):
         print(e_values)
 
 
-# pylint: disable=too-many-locals, too-many-branches, too-many-statements
 @bot.command(name="add", help="Add the players to the list")
 async def add_summoner(ctx, *, message):
     """Writes list of summoners to local

@@ -10,7 +10,7 @@ from alembic import op
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.dialects import postgresql
 
-# revision identifiers, used by Alembic.
+# pylint: skip-file
 revision = "82c39910d8dd"
 down_revision = "09ed5e242c53"
 branch_labels = None

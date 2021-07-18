@@ -10,7 +10,7 @@ from alembic import op
 from sqlalchemy import Column, Integer, String, DateTime
 import enum
 
-# pylint: disable-all
+# pylint: skip-file
 class RegionEnum(enum.Enum):
     NA = 1
     KR = 2
