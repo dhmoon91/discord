@@ -45,10 +45,33 @@ postgres=# CREATE USER admin_bot WITH SUPERUSER PASSWORD 'test';
 postgres=# CREATE DATABASE bot_dev OWNER admin_bot;
 ```
 
-// set up tables.
-from bot import engine
-from bot import Base
-Base.metadata.create_all(engine)
+10. DB Migration and setup:
+Base ORM and DB engine; `SQLAlchemy` and `psycopg2`
+- Install both `SQLAlchemy`, `psycopg2` if you haven't from step `3`.
+
+- ## Migrations
+   * Uses https://alembic.sqlalchemy.org/
+
+   * Install alembic if not installed yet from step `3`  
+   `pip3 install alembic`
+
+   * For first time, after install, run   
+   `alembic upgade head`
+   
+   * To genearte new migration;  
+   `alembic revision -m "create account table"`  
+   This will create new migration file under /alembic/versions. Fill in the file.
+   
+   * To apply migration;  
+   `alembic upgrade head`
+
+   * **Make sure you update the models reference in db/models/ to represent newly added schema**
+
+   * To revert one migration;  
+   `alembic downgrade -1`
+
+   * To revert all migration;  
+   `alembic downgrade base`
 ## Packages:
 
 **Pydash**

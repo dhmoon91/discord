@@ -36,10 +36,11 @@ intents.members = True  # Subscribe to the privileged members intent.
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 LOCAL_BOT_PREFIX = os.getenv("LOCAL_BOT_PREFIX")
+DB_URL = os.getenv("DB_URL")
 
 # differ by env.
-# Init DB
-engine = create_engine("postgresql://admin_bot:test@localhost/bot_dev")
+# Connec to DB.
+engine = create_engine(DB_URL)
 bind_engine(engine)
 session = Session()
 
@@ -111,16 +112,16 @@ async def help_command(ctx):
 async def get_rank(ctx, name: str):
     """Sends the summoner's rank information to the bot"""
     try:
-        channel_id = str(ctx.guild.id)
         summoner_info = get_summoner_rank(name)
         summoner_data = Summoners(
-            channel_id,
-            "NA",
+            summoner_info["user_name"],
+            "na1",
             summoner_info["puuid"],
             summoner_info["tier_division"],
             summoner_info["tier_rank"],
             summoner_info["solo_win"],
             summoner_info["solo_loss"],
+            summoner_info["league_points"],
         )
         # Create db row.
         session.add(summoner_data)

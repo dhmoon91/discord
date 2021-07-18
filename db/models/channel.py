@@ -4,7 +4,7 @@ from sqlalchemy import Column, Integer, String, DateTime
 from ..db import Base
 
 
-class Channel(Base):
+class Channels(Base):
     """channels model definition"""
 
     __tablename__ = "channels"
