@@ -109,29 +109,55 @@ async def help_command(ctx, name=None):
 
         embed_data = EmbedData()
         embed_data.title = f"How to use {bot.user.name}"
-        embed_data.description = f"`All Data from NA server`\n\n <@!{bot.user.id}> <command> --help\
-              \n\nPlease type `--help` to see how to use the command"
+        embed_data.description = f"** **\n<@!{bot.user.id}> <command> --help\
+              \n\n`--help` shows the information of the command:"
         embed_data.color = discord.Color.gold()
 
         # ADD thumbnail (Image can be changed whatever we want. eg.our logo)
         embed_data.thumbnail = "https://emoji.gg/assets/emoji/3907_lol.png"
 
         embed_data.fields = []
-        embed_data.fields.append({"name": "** **", "value": "** **", "inline": False})
+        embed_data.fields.append(
+            {"name": "** **", "value": "**\nCommands:**", "inline": False}
+        )
 
         for command in list_commands:
-            if not command["command"].startswith("help"):
+            if command["command"].startswith("help"):
                 embed_data.fields.append(
                     {
                         "name": "** **",
-                        "value": "<@!{}> **{} summoner_name**\n{}".format(
-                            f"{bot.user.id}",
+                        "value": "**{}** `command_name`\n{}".format(
+                            command["command"],
+                            "Display the information of the command",
+                        ),
+                        "inline": False,
+                    }
+                )
+            elif command["command"].startswith("list"):
+                embed_data.fields.append(
+                    {
+                        "name": "** **",
+                        "value": "**{}**\n{}".format(
+                            command["command"], command["description"]
+                        ),
+                        "inline": False,
+                    }
+                )
+
+            else:
+                embed_data.fields.append(
+                    {
+                        "name": "** **",
+                        "value": "**{}** `summoner_name`\n{}".format(
                             command["command"],
                             command["description"],
                         ),
                         "inline": False,
                     }
                 )
+        embed_data.fields.append(
+            {"name": "** **", "value": "`All Data from NA server`", "inline": False}
+        )
         await ctx.send(embed=create_embed(embed_data))
 
     # pylint: disable=broad-except
@@ -159,9 +185,9 @@ async def get_rank(ctx, name="--help"):  # set name attribute to default help co
         if name == "--help":
             embed_data = EmbedData()
             embed_data.title = f"How to use {get_rank.name} command"
-            embed_data.description = (
-                "`All Data from NA server`\n\n <@!{0}> **{1} summoner_name**"
-            ).format(bot.user.id, get_rank.name)
+            embed_data.description = ("** **\n<@!{0}> **{1} summoner_name**").format(
+                bot.user.id, get_rank.name
+            )
             embed_data.color = discord.Color.blurple()
 
             embed_data.fields = []
@@ -179,13 +205,17 @@ async def get_rank(ctx, name="--help"):  # set name attribute to default help co
                 }
             )
 
+            embed_data.fields.append(
+                {"name": "** **", "value": "`All Data from NA server`", "inline": False}
+            )
+
             return await ctx.send(embed=create_embed(embed_data))
 
         summoner_info = get_summoner_rank(name)
 
         embed_data = EmbedData()
         embed_data.title = "Solo/Duo Rank"
-
+        embed_data.description = f"** **\n<@!{bot.user.id}> <command>"
         embed_data.color = discord.Color.dark_gray()
 
         # Add author, thumbnail, fields, and footer to the embed
@@ -287,9 +317,9 @@ async def get_last_match(ctx, name="--help"):
         if name == "--help":
             embed_data = EmbedData()
             embed_data.title = f"How to use {get_last_match.name} command"
-            embed_data.description = (
-                "`All Data from NA server`\n\n <@!{0}> **{1} summoner_name**"
-            ).format(bot.user.id, get_last_match.name)
+            embed_data.description = ("** **\n<@!{0}> **{1} summoner_name**").format(
+                bot.user.id, get_last_match.name
+            )
             embed_data.color = discord.Color.blurple()
 
             embed_data.fields = []
@@ -305,6 +335,10 @@ async def get_last_match(ctx, name="--help"):
                     ),
                     "inline": False,
                 }
+            )
+
+            embed_data.fields.append(
+                {"name": "** **", "value": "`All Data from NA server`", "inline": False}
             )
 
             return await ctx.send(embed=create_embed(embed_data))
@@ -339,7 +373,8 @@ async def get_last_match(ctx, name="--help"):
         await ctx.send(embed=create_embed(embed_data))
 
 
-@bot.command(name="add", help="Add the players to the list")
+# pylint: disable=too-many-locals, too-many-branches, too-many-statements
+@bot.command(name="add", help="Add summoner(s) to a list for making teams")
 async def add_summoner(ctx, *, message="--help"):
     """Writes list of summoners to local
     json file and sends the list to the bot"""
@@ -353,9 +388,9 @@ async def add_summoner(ctx, *, message="--help"):
         if message == "--help":
             embed_data = EmbedData()
             embed_data.title = f"How to use {add_summoner.name} command"
-            embed_data.description = (
-                "`All Data from NA server`\n\n <@!{0}> **{1} summoner_name**"
-            ).format(bot.user.id, add_summoner.name)
+            embed_data.description = ("** **\n<@!{0}> **{1} summoner_name**").format(
+                bot.user.id, add_summoner.name
+            )
             embed_data.color = discord.Color.blurple()
 
             embed_data.fields = []
@@ -364,13 +399,18 @@ async def add_summoner(ctx, *, message="--help"):
             embed_data.fields.append(
                 {
                     "name": "** **",
-                    "value": "{0}\n\n{1}\n\n{2}".format(
-                        "This command displays the list of summoners on standby.",
+                    "value": "{}\n\n{}\n\n{}\n\n{}".format(
+                        "This command adds summoner(s) to a list for making teams",
+                        "This command also displays the list of summoners on standby.",
                         "The information includes a summoner's name, tier division, and rank number.",
                         f"Adding multiple summoners: `@{bot.user.name} add name1, name2`",
                     ),
                     "inline": False,
                 }
+            )
+
+            embed_data.fields.append(
+                {"name": "** **", "value": "`All Data from NA server`", "inline": False}
             )
 
             return await ctx.send(embed=create_embed(embed_data))
@@ -502,7 +542,7 @@ async def add_summoner(ctx, *, message="--help"):
         await display_current_list_of_summoners(ctx)
 
 
-@bot.command(name="list", help="Display a list of summoner")
+@bot.command(name="list", help="Display the list of summoner ranks and names added")
 async def display_current_list_of_summoners(ctx, name=None):
     """For displaying current list of summoners"""
     try:
@@ -516,9 +556,9 @@ async def display_current_list_of_summoners(ctx, name=None):
             embed_data.title = (
                 f"How to use {display_current_list_of_summoners.name} command"
             )
-            embed_data.description = (
-                "`All Data from NA server`\n\n <@!{0}> **{1}**"
-            ).format(bot.user.id, display_current_list_of_summoners.name)
+            embed_data.description = ("** **\n<@!{0}> **{1}**").format(
+                bot.user.id, display_current_list_of_summoners.name
+            )
             embed_data.color = discord.Color.blurple()
 
             embed_data.fields = []
@@ -534,6 +574,9 @@ async def display_current_list_of_summoners(ctx, name=None):
                 }
             )
 
+            embed_data.fields.append(
+                {"name": "** **", "value": "`All Data from NA server`", "inline": False}
+            )
             return await ctx.send(embed=create_embed(embed_data))
 
         # server id
@@ -593,6 +636,7 @@ async def display_current_list_of_summoners(ctx, name=None):
         await ctx.send(embed=create_embed(embed_data))
 
 
+# pylint: disable=too-many-locals
 @bot.command(name="teams", help="Display two teams")
 # pylint: disable=too-many-locals, too-many-branches
 async def display_teams(ctx):
