@@ -9,7 +9,6 @@ import asyncio
 
 from dotenv import load_dotenv
 
-
 # saving df to image
 import dataframe_image as dfi
 
@@ -17,9 +16,13 @@ import dataframe_image as dfi
 import discord
 from discord.ext import commands
 
+# DB
+from sqlalchemy import create_engine
+from db.db import bind_engine, Session
+from db.models.summoners import Summoners
+
 # Riot util func.
 from riot import get_summoner_rank, previous_match, create_summoner_list
-
 
 from utils.embed_object import EmbedData
 from utils.utils import create_embed, get_file_path
@@ -39,7 +42,13 @@ intents.members = True  # Subscribe to the privileged members intent.
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 LOCAL_BOT_PREFIX = os.getenv("LOCAL_BOT_PREFIX")
+DB_URL = os.getenv("DB_URL")
 
+# differ by env.
+# Connec to DB.
+engine = create_engine(DB_URL)
+bind_engine(engine)
+session = Session()
 
 # ADD help_command attribute to remove default help command
 bot = commands.Bot(
@@ -118,6 +127,19 @@ async def get_rank(ctx, *, name: str):  # using * for get a summoner name with s
     """Sends the summoner's rank information to the bot"""
     try:
         summoner_info = get_summoner_rank(name)
+        summoner_data = Summoners(
+            summoner_info["user_name"],
+            "na1",
+            summoner_info["puuid"],
+            summoner_info["tier_division"],
+            summoner_info["tier_rank"],
+            summoner_info["solo_win"],
+            summoner_info["solo_loss"],
+            summoner_info["league_points"],
+        )
+        # Create db row.
+        session.add(summoner_data)
+        session.commit()
 
         embed_data = EmbedData()
         embed_data.title = "Solo/Duo Rank"
@@ -228,7 +250,6 @@ async def get_last_match(ctx, *, name: str):
         await ctx.send(embed=create_embed(embed_data))
 
 
-# pylint: disable=too-many-locals, too-many-branches, too-many-statements
 @bot.command(name="add", help="Add the players to the list")
 async def add_summoner(ctx, *, message):
     """Writes list of summoners to local

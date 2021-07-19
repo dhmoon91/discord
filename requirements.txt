@@ -9,3 +9,6 @@ black
 pylint
 asyncio
 pre-commit
+SQLAlchemy
+psycopg2
+alembic

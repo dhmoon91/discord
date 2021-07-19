@@ -36,6 +36,42 @@ pre-commit install --hook-type pre-push
 
 - Add `LOCAL_BOT_PREFIX= ""` to .env with desired prefix between the double quotes
 
+9. Install Postgresql server 9.6.2 or up brew install postgresql and start it brew services start postgresql
+Initialize development and test databases as described below:
+Use following command to bootstrap dev and test databases
+```
+$ psql postgres
+postgres=# CREATE USER admin_bot WITH SUPERUSER PASSWORD 'test';
+postgres=# CREATE DATABASE bot_dev OWNER admin_bot;
+```
+
+10. DB Migration and setup:
+Base ORM and DB engine; `SQLAlchemy` and `psycopg2`
+- Install both `SQLAlchemy`, `psycopg2` if you haven't from step `3`.
+
+- ## Migrations
+   * Uses https://alembic.sqlalchemy.org/
+
+   * Install alembic if not installed yet from step `3`  
+   `pip3 install alembic`
+
+   * For first time, after install, run   
+   `alembic upgade head`
+   
+   * To genearte new migration;  
+   `alembic revision -m "create account table"`  
+   This will create new migration file under /alembic/versions. Fill in the file.
+   
+   * To apply migration;  
+   `alembic upgrade head`
+
+   * **Make sure you update the models reference in db/models/ to represent newly added schema**
+
+   * To revert one migration;  
+   `alembic downgrade -1`
+
+   * To revert all migration;  
+   `alembic downgrade base`
 ## Packages:
 
 **Pydash**

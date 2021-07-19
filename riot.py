@@ -26,6 +26,9 @@ def get_summoner_rank(name: str):
     summoner_profile (dict): rank information about the summoner
 
     """
+    # TODO BEFORE REQUESTING DATA, CHECK DB AND UPDATE_TIME TO SEE IF WE ALREADY HAVE DATA.
+    # IF WE HAVE DATA BUT UPDATE_TIME IS OVER THE CONSTRAINT, WE SHOULD DELETE THE ROW.
+
     # We need to get id
     user = watcher.summoner.by_name(MY_REGION, name)
     ranked_stat = watcher.league.by_summoner(MY_REGION, user["id"])
@@ -69,6 +72,9 @@ def get_summoner_rank(name: str):
         "tier_image_path": emblem_path,
         "tier_image_name": f"Emblem_{tier_division.capitalize()}.png",
         "tier": tier,
+        "puuid": user["puuid"],
+        "tier_division": tier_division,
+        "tier_rank": tier_rank,
         "solo_win": solo_win,
         "solo_loss": solo_loss,
         "league_points": league_points,
