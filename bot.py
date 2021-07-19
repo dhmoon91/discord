@@ -14,12 +14,14 @@ import dataframe_image as dfi
 
 # DB
 from sqlalchemy import create_engine
-from db.db import bind_engine, Session
-from db.models.summoners import Summoners
 
 # Discord
 import discord
 from discord.ext import commands
+
+from db.db import bind_engine, Session
+from db.models.summoners import Summoners
+
 
 # Riot util func.
 from riot import get_summoner_rank, previous_match, create_summoner_list, make_teams
