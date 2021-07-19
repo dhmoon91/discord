@@ -9,7 +9,7 @@ import pandas as pd
 import pydash
 from dotenv import load_dotenv
 from utils.utils import get_file_path
-from utils.constants import TIER_VALUE, RANK_VALUE
+from utils.constants import TIER_VALUE, RANK_VALUE, UNCOMMON_TIERS
 
 load_dotenv()
 RIOTAPIKEY = os.getenv("RIOT_API_KEY")
@@ -62,9 +62,7 @@ def get_summoner_rank(name: str):
     tier = " ".join([tier_division, tier_rank])
 
     # Get aboslute path to emblem file.
-    emblem_path = get_file_path(
-        f"ranked-emblems/Emblem_{tier_division.capitalize()}.png"
-    )
+    emblem_path = get_file_path(f"images/Emblem_{tier_division.capitalize()}.png")
 
     summoner_profile = {
         "user_name": user["name"],
@@ -206,10 +204,16 @@ def make_teams(list_of_summoners: dict):
 
     for summoner in list_of_summoners:
 
+        # since tier rank numbers for unranked, master, gm and challengers
+        # are automatically set to I but we need IV values for all of these tiers
+        if summoner["tier_division"] in UNCOMMON_TIERS:
+            summoner["tier_rank_number"] = "IV"
+
         # calculate value by adding tier_division, tier_rank_number
         rank_value = (
             float(TIER_VALUE.get(summoner["tier_division"]))
             + RANK_VALUE.get(summoner["tier_rank_number"]) * 1000
+            + summoner["league_points"]
         )
 
         # update so that it can be used in display teams function
