@@ -16,6 +16,7 @@ from sqlalchemy import create_engine
 import discord
 from discord.ext import commands
 
+# DB
 from db.db import bind_engine, Session
 from db.models.team_members import TeamMembers
 
@@ -122,7 +123,7 @@ async def help_command(ctx, name=None):
         )
 
         for command in list_commands:
-            if command["command"].startswith("help"):
+            if command["command"] == "help":
                 embed_data.fields.append(
                     {
                         "name": "** **",
@@ -133,7 +134,7 @@ async def help_command(ctx, name=None):
                         "inline": False,
                     }
                 )
-            elif command["command"].startswith("list"):
+            elif command["command"] == "list":
                 embed_data.fields.append(
                     {
                         "name": "** **",
@@ -215,7 +216,6 @@ async def get_rank(ctx, name="--help"):  # set name attribute to default help co
 
         embed_data = EmbedData()
         embed_data.title = "Solo/Duo Rank"
-        embed_data.description = f"** **\n<@!{bot.user.id}> <command>"
         embed_data.color = discord.Color.dark_gray()
 
         # Add author, thumbnail, fields, and footer to the embed
