@@ -38,7 +38,7 @@ pre-commit install --hook-type pre-push
 
 9. Install Postgresql server 9.6.2 or up brew install postgresql and start it brew services start postgresql
 Initialize development and test databases as described below:
-Use following command to bootstrap dev and test databases
+Use following command to bootstrap dev databases
 ```
 $ psql postgres
 postgres=# CREATE USER admin_bot WITH SUPERUSER PASSWORD 'test';
@@ -48,7 +48,7 @@ postgres=# CREATE DATABASE bot_dev OWNER admin_bot;
 10. DB Migration and setup:
 Base ORM and DB engine; `SQLAlchemy` and `psycopg2`
 - Install both `SQLAlchemy`, `psycopg2` if you haven't from step `3`.
-
+- Add `DB_URL='postgresql://admin_bot:test@localhost/bot_dev'` into .env file
 - ## Migrations
    * Uses https://alembic.sqlalchemy.org/
 
