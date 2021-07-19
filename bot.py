@@ -12,17 +12,19 @@ from dotenv import load_dotenv
 # saving df to image
 import dataframe_image as dfi
 
+# DB
+from sqlalchemy import create_engine
+
 # Discord
 import discord
 from discord.ext import commands
 
-# DB
-from sqlalchemy import create_engine
 from db.db import bind_engine, Session
 from db.models.summoners import Summoners
 
+
 # Riot util func.
-from riot import get_summoner_rank, previous_match, create_summoner_list
+from riot import get_summoner_rank, previous_match, create_summoner_list, make_teams
 
 from utils.embed_object import EmbedData
 from utils.utils import create_embed, get_file_path
@@ -375,7 +377,7 @@ async def display_current_list_of_summoners(ctx):
         with open(json_path, "r") as file:
             file_data = json.load(file)
 
-        if not file_data[server_id]:
+        if not server_id in file_data.keys():
             raise Exception
 
         total_number_of_players = len(file_data[server_id])
@@ -421,6 +423,109 @@ async def display_current_list_of_summoners(ctx):
         embed_data.title = ":warning:   No Summoners in the List"
         embed_data.description = f"Please add summoner by `@{bot.user.name} add`"
         embed_data.color = discord.Color.orange()
+        await ctx.send(embed=create_embed(embed_data))
+
+
+@bot.command(name="teams", help="Display two teams")
+async def display_teams(ctx):
+    """Make and display teams to bot from list of summoners in json"""
+    try:
+        # typing indicator
+        async with ctx.typing():
+            await asyncio.sleep(1)
+
+        # server id
+        server_id = str(ctx.guild.id)
+
+        file_data = ""
+
+        if os.path.getsize(json_path) == 0 or not os.path.exists(json_path):
+            raise Exception("NO SUMMONERS IN THE LIST")
+
+        # get data from the json file and save to file data
+
+        with open(json_path, "r") as file:
+            file_data = json.load(file)
+
+        if not server_id in file_data.keys() or len(file_data[server_id]) != 10:
+            # since when add summoner only accepts up to 10 people
+            raise Exception("NOT ENOUGH PLAYERS")
+
+        teams = make_teams(file_data[server_id])
+
+        blue_team = teams[0]
+        red_team = teams[1]
+
+        blue_team_output = ""
+        red_team_output = ""
+
+        # using enumerate due to pylint error
+        for count, _ in enumerate(blue_team):
+
+            blue_team_output += (
+                "`{0}{1}` {2}\n".format(
+                    blue_team[count]["tier_division"][0],
+                    TIER_RANK_MAP.get(blue_team[count]["tier_rank_number"]),
+                    blue_team[count]["formatted_user_name"],
+                )
+                # different formatting for uncommon tiers
+                if blue_team[count]["tier_division"] not in UNCOMMON_TIERS
+                else "`{0}` {1}\n".format(
+                    UNCOMMON_TIER_DISPLAY_MAP.get(blue_team[count]["tier_division"]),
+                    blue_team[count]["formatted_user_name"],
+                )
+            )
+
+            red_team_output += (
+                "`{0}{1}` {2}\n".format(
+                    red_team[count]["tier_division"][0],
+                    TIER_RANK_MAP.get(red_team[count]["tier_rank_number"]),
+                    red_team[count]["formatted_user_name"],
+                )
+                # different formatting for uncommon tiers
+                if red_team[count]["tier_division"] not in UNCOMMON_TIERS
+                else "`{0}` {1}\n".format(
+                    UNCOMMON_TIER_DISPLAY_MAP.get(red_team[count]["tier_division"]),
+                    red_team[count]["formatted_user_name"],
+                )
+            )
+
+        for team_name in ["blue", "red"]:
+            embed_data = EmbedData()
+            embed_data.title = f"TEAM {team_name.upper()}"
+            embed_data.description = "** **"
+            embed_data.color = (
+                discord.Color.blue() if team_name == "blue" else discord.Color.red()
+            )
+            file = discord.File(get_file_path(f"images/{team_name}-minion.png"))
+            embed_data.thumbnail = f"attachment://{team_name}-minion.png"
+            embed_data.fields = []
+            embed_data.fields.append(
+                {
+                    "name": "Summoners" + " " * 10,
+                    "value": blue_team_output
+                    if team_name == "blue"
+                    else red_team_output,
+                    "inline": True,
+                }
+            )
+            await ctx.send(file=file, embed=create_embed(embed_data))
+
+    # pylint: disable=broad-except
+    except Exception as e_values:
+        if str(e_values) in ["NOT ENOUGH PLAYERS", "NO SUMMONERS IN THE LIST"]:
+            error_title = e_values.args[0]
+            error_description = f"There are not enough players to make teams \
+                \n\nTo add a summoner:\n`@{bot.user.name} add summoner_name` \
+                    \n\nAdding multiple summoners:\n `@{bot.user.name} add name1, name2`"
+        else:
+            error_title = f"{e_values}"
+            error_description = "Oops! Something went wrong.\nTry again!"
+
+        embed_data = EmbedData()
+        embed_data.title = ":x:   {0}".format(error_title)
+        embed_data.description = "{0}".format(error_description)
+        embed_data.color = discord.Color.red()
         await ctx.send(embed=create_embed(embed_data))
 
 
