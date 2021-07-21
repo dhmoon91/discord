@@ -57,3 +57,8 @@ def create_embed(embed_object):
     except Exception as e_values:
         print("error embed")
         print(e_values)
+
+
+def normalize_name(string):
+    """Normalize name by changing to lower case and removing whitespaces"""
+    return string.lower().replace(" ","")

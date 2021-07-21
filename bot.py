@@ -6,6 +6,7 @@ Bot codes
 import os
 import json
 import asyncio
+import pydash
 
 from dotenv import load_dotenv
 
@@ -27,7 +28,7 @@ from db.models.summoners import Summoners
 from riot import get_summoner_rank, previous_match, create_summoner_list, make_teams
 
 from utils.embed_object import EmbedData
-from utils.utils import create_embed, get_file_path
+from utils.utils import create_embed, get_file_path, normalize_name
 from utils.constants import (
     TIER_RANK_MAP,
     MAX_NUM_PLAYERS_TEAM,
@@ -252,6 +253,7 @@ async def get_last_match(ctx, *, name: str):
         await ctx.send(embed=create_embed(embed_data))
 
 
+# pylint: disable=too-many-branches, too-many-statements
 @bot.command(name="add", help="Add the players to the list")
 async def add_summoner(ctx, *, message):
     """Writes list of summoners to local
@@ -425,7 +427,7 @@ async def display_current_list_of_summoners(ctx):
         embed_data.color = discord.Color.orange()
         await ctx.send(embed=create_embed(embed_data))
 
-
+# pylint: disable=too-many-locals
 @bot.command(name="teams", help="Display two teams")
 async def display_teams(ctx):
     """Make and display teams to bot from list of summoners in json"""
@@ -527,6 +529,137 @@ async def display_teams(ctx):
         embed_data.description = "{0}".format(error_description)
         embed_data.color = discord.Color.red()
         await ctx.send(embed=create_embed(embed_data))
+
+
+# pylint: disable=too-many-locals, too-many-branches, too-many-statements
+@bot.command(name="remove", help="Remove player(s) from the list")
+async def remove_summoner(ctx, *, message):
+    """Remove summoner(s) from list
+    and send  the list to the bot"""
+
+    try:
+        # typing indicator
+        async with ctx.typing():
+            await asyncio.sleep(1)
+
+        # converting the message into list of summoners
+        summoner_to_remove_input = message.split(",")
+
+        # Exception case: attempt to remove more than 10 players
+        if len(summoner_to_remove_input) > MAX_NUM_PLAYERS_TEAM:
+            raise Exception (
+                "Limit Exceeded",
+                "You tried to remove more than 10 summoners! \
+                \nPlease remove {0} less summoners or consider using `clear` command".format(
+                    MAX_NUM_PLAYERS_TEAM - len(summoner_to_remove_input)
+                )
+            )
+
+        # Exception case: data/data.json file does not exist
+        if not os.path.exists(json_path):
+            raise Exception (
+                "Limit Exceeded",
+                "There is no summoner(s) added in the game.\nPlease add summoner(s) first!"
+            )
+
+        # for importing data from json file
+        file_data = ""
+        # initializing server id to a variable
+        server_id = str(ctx.guild.id)
+
+        if os.path.getsize(json_path) > 0:
+            with open(json_path, "r") as file:
+                file_data = json.load(file)
+        else:
+            raise Exception (
+                "Limit Exceeded",
+                "There is no summoner(s) added in the game.\nPlease add summoner(s) first!"
+            )
+
+        unmatched_summoner_name = []
+        if server_id in file_data:
+            for player_name in summoner_to_remove_input:
+                # pylint: disable=cell-var-from-loop
+                matched_summoner = pydash.find(file_data[server_id],
+                    lambda x: normalize_name(x["user_name"])==normalize_name(player_name))
+                if pydash.predicates.is_empty(matched_summoner):
+                    unmatched_summoner_name.append(player_name)
+                else:
+                    file_data[server_id].remove(matched_summoner)
+                    matched_summoner["user_name_input"]=player_name
+            with open(json_path, "w") as file:
+                json.dump(file_data, file, indent=4)
+            # Exception case: unmatched_summoner_name identified
+            if len(unmatched_summoner_name) > 0:
+                raise Exception(
+                    "Unregistered Summoner(s)",
+                    "Summoners: {0} were not registered for the game".format(
+                        str(unmatched_summoner_name)
+                    )
+                )
+        else:
+            raise Exception(
+                "Limit Exceeded",
+                "There is no summoner(s) added in the game.\nPlease add summoner(s) first!"
+            )
+        # display list of summoners
+        await display_current_list_of_summoners(ctx)
+
+    # pylint: disable=broad-except
+    except Exception as e_values:
+        if "Limit Exceeded" in str(e_values) or "Unregistered Summoner(s)" in str(e_values):
+            error_title = e_values.args[0]
+            error_description = e_values.args[1]
+        else:
+            error_title = f"{e_values}"
+            error_description = "Oops! Something went wrong.\nTry again!"
+
+        embed_data = EmbedData()
+        embed_data.title = ":x:   {0}".format(error_title)
+        embed_data.description = "{0}".format(error_description)
+        embed_data.color = discord.Color.red()
+        await ctx.send(embed=create_embed(embed_data))
+
+        # display list of summoners
+        await display_current_list_of_summoners(ctx)
+
+
+# pylint: disable=too-many-locals, too-many-branches, too-many-statements
+@bot.command(name="clear", help="Clear player(s) from the list")
+async def clear_list_of_summoners(ctx):
+    """Clear out summoners from the list"""
+
+    try:
+        # for importing data from json file
+        file_data = ""
+        # initializing server id to a variable
+        server_id = str(ctx.guild.id)
+
+        if os.path.getsize(json_path) > 0:
+            with open(json_path, "r") as file:
+                file_data = json.load(file)
+
+        if server_id in file_data.keys():
+            file_data[server_id].clear()
+            with open(json_path, "w") as file:
+                json.dump(file_data, file, indent=4)
+
+        # display list of summoners
+        await display_current_list_of_summoners(ctx)
+
+    # pylint: disable=broad-except
+    except Exception as e_values:
+        error_title = f"{e_values}"
+        error_description = "Oops! Something went wrong.\nTry again!"
+
+        embed_data = EmbedData()
+        embed_data.title = ":x:   {0}".format(error_title)
+        embed_data.description = "{0}".format(error_description)
+        embed_data.color = discord.Color.red()
+        await ctx.send(embed=create_embed(embed_data))
+
+        # display list of summoners
+        await display_current_list_of_summoners(ctx)
 
 
 @bot.event
