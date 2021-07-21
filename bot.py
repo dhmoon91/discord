@@ -101,7 +101,10 @@ async def help_command(ctx, name=None):
         for command in bot.commands:
             # check if the user input specific command after help
             if command.name == name:
-                return await command(ctx)
+                # for commands that receive multiple parameter
+                if command.name in ["add", "remove"]:
+                    return await command(ctx)
+                return await command(ctx, "help")
             list_commands.append(
                 {"command": f"{command.name}", "description": f"{command.help}"}
             )
@@ -134,7 +137,7 @@ async def help_command(ctx, name=None):
                         "inline": False,
                     }
                 )
-            elif command["command"] == "list":
+            elif command["command"] in ["list", "teams", "clear"]:
                 embed_data.fields.append(
                     {
                         "name": "** **",
@@ -637,14 +640,41 @@ async def display_current_list_of_summoners(ctx, name=None):
 
 
 # pylint: disable=too-many-locals
-@bot.command(name="teams", help="Display two teams")
-# pylint: disable=too-many-locals, too-many-branches
-async def display_teams(ctx):
+@bot.command(name="teams", help="Display TEAM BLUE and RED for a custom game")
+async def display_teams(ctx, name=None):
     """Make and display teams to bot from list of summoners in json"""
     try:
         # typing indicator
         async with ctx.typing():
             await asyncio.sleep(1)
+
+        # displays the display_teams's help command
+        if name is not None:
+            embed_data = EmbedData()
+            embed_data.title = f"How to use {display_teams.name} command"
+
+            embed_data.description = ("** **\n<@!{0}> **{1}**").format(
+                bot.user.id, display_teams.name
+            )
+            embed_data.color = discord.Color.blurple()
+
+            embed_data.fields = []
+            # pylint: disable=line-too-long
+            embed_data.fields.append(
+                {
+                    "name": "** **",
+                    "value": "{0}\n\n{1}".format(
+                        "This command displays TEAM BLUE and RED for a custom game.",
+                        "The information includes a summoner's name, tier division, and rank number.",
+                    ),
+                    "inline": False,
+                }
+            )
+
+            embed_data.fields.append(
+                {"name": "** **", "value": "`All Data from NA server`", "inline": False}
+            )
+            return await ctx.send(embed=create_embed(embed_data))
 
         # server id
         server_id = str(ctx.guild.id)
@@ -710,8 +740,10 @@ async def display_teams(ctx):
 
 
 # pylint: disable=too-many-locals, too-many-branches, too-many-statements
-@bot.command(name="remove", help="Remove player(s) from the list")
-async def remove_summoner(ctx, *, message):
+@bot.command(
+    name="remove", help="Remove player(s) from the list on standby for a custom game"
+)
+async def remove_summoner(ctx, *, message="--help"):
     """Remove summoner(s) from list
     and send  the list to the bot"""
 
@@ -719,6 +751,37 @@ async def remove_summoner(ctx, *, message):
         # typing indicator
         async with ctx.typing():
             await asyncio.sleep(1)
+
+        # displays the remove_summoner's help command
+        if message == "--help":
+            embed_data = EmbedData()
+            embed_data.title = f"How to use {remove_summoner.name} command"
+            embed_data.description = ("** **\n<@!{0}> **{1} summoner_name**").format(
+                bot.user.id, remove_summoner.name
+            )
+            embed_data.color = discord.Color.blurple()
+
+            embed_data.fields = []
+
+            # pylint: disable=line-too-long
+            embed_data.fields.append(
+                {
+                    "name": "** **",
+                    "value": "{}\n\n{}\n\n{}\n\n{}".format(
+                        "This command removes player(s) from the list on standby for a custom game",
+                        "This command also displays the list of summoners on standby.",
+                        "The information includes a summoner's name, tier division, and rank number.",
+                        f"Remove multiple summoners: `@{bot.user.name} add name1, name2`",
+                    ),
+                    "inline": False,
+                }
+            )
+
+            embed_data.fields.append(
+                {"name": "** **", "value": "`All Data from NA server`", "inline": False}
+            )
+
+            return await ctx.send(embed=create_embed(embed_data))
 
         # converting the message into list of summoners
         summoner_to_remove_input = [x.strip() for x in message.split(",")]
@@ -816,11 +879,47 @@ async def remove_summoner(ctx, *, message):
 
 
 # pylint: disable=too-many-locals, too-many-branches, too-many-statements
-@bot.command(name="clear", help="Clear player(s) from the list")
-async def clear_list_of_summoners(ctx):
+@bot.command(
+    name="clear", help="Clear player(s) from the list on standby for a custom game"
+)
+async def clear_list_of_summoners(ctx, name=None):
     """Clear out summoners from the list"""
 
     try:
+        # typing indicator
+        async with ctx.typing():
+            await asyncio.sleep(1)
+
+        # displays the clear_list_of_summoners's help command
+        if name is not None:
+            embed_data = EmbedData()
+            embed_data.title = f"How to use {clear_list_of_summoners.name} command"
+
+            embed_data.description = ("** **\n<@!{0}> **{1}**").format(
+                bot.user.id, clear_list_of_summoners.name
+            )
+            embed_data.color = discord.Color.blurple()
+
+            embed_data.fields = []
+            # pylint: disable=line-too-long
+            embed_data.fields.append(
+                {
+                    "name": "** **",
+                    "value": "{0}".format(
+                        "This command clear player(s) from the list on standby for a custom game."
+                    ),
+                    "inline": False,
+                }
+            )
+
+            embed_data.fields.append(
+                {"name": "** **", "value": "`All Data from NA server`", "inline": False}
+            )
+            return await ctx.send(embed=create_embed(embed_data))
+
+        # for importing data from json file
+        file_data = ""
+        # initializing server id to a variable
         server_id = str(ctx.guild.id)
         member_list_query_result = (
             session.query(TeamMembers).filter(TeamMembers.channel_id == server_id).one()
