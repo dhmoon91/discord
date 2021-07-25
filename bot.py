@@ -251,6 +251,7 @@ async def get_last_match(ctx, *, name: str):
 
 
 @bot.command(name="add", help="Add the players to the list")
+# pylint: disable=too-many-locals, too-many-branches
 async def add_summoner(ctx, *, message):
     """Writes list of summoners to local
     json file and sends the list to the bot"""
@@ -437,6 +438,7 @@ async def display_current_list_of_summoners(ctx):
 
 
 @bot.command(name="teams", help="Display two teams")
+# pylint: disable=too-many-locals, too-many-branches
 async def display_teams(ctx):
     """Make and display teams to bot from list of summoners in json"""
     try:
