@@ -8,7 +8,7 @@ Create Date: 2021-07-18 05:15:50.214275
 import datetime
 from alembic import op
 from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.dialects import postgresql
+from sqlalchemy.dialects.postgresql import JSONB
 
 # pylint: skip-file
 revision = "82c39910d8dd"
@@ -22,7 +22,7 @@ def upgrade():
         "team_members",
         Column("id", Integer, primary_key=True),
         Column("channel_id", String, nullable=False),
-        Column("members", postgresql.JSONB()),
+        Column("members",JSONB),
         Column("created_at", DateTime, default=datetime.datetime.utcnow),
         Column(
             "updated_at",

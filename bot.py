@@ -10,9 +10,6 @@ import pydash
 
 from dotenv import load_dotenv
 
-# saving df to image
-import dataframe_image as dfi
-
 # DB
 from sqlalchemy import create_engine
 
@@ -21,14 +18,16 @@ import discord
 from discord.ext import commands
 
 from db.db import bind_engine, Session
-from db.models.summoners import Summoners
+from db.models.team_members import TeamMembers
 
 
 # Riot util func.
-from riot import get_summoner_rank, previous_match, create_summoner_list, make_teams
+# pylint: disable=unused-import
+from riot_api import get_summoner_rank, previous_match, create_summoner_list
 
 from utils.embed_object import EmbedData
 from utils.utils import create_embed, get_file_path, normalize_name
+from utils.make_teams import make_teams
 from utils.constants import (
     TIER_RANK_MAP,
     MAX_NUM_PLAYERS_TEAM,
@@ -130,19 +129,6 @@ async def get_rank(ctx, *, name: str):  # using * for get a summoner name with s
     """Sends the summoner's rank information to the bot"""
     try:
         summoner_info = get_summoner_rank(name)
-        summoner_data = Summoners(
-            summoner_info["user_name"],
-            "na1",
-            summoner_info["puuid"],
-            summoner_info["tier_division"],
-            summoner_info["tier_rank"],
-            summoner_info["solo_win"],
-            summoner_info["solo_loss"],
-            summoner_info["league_points"],
-        )
-        # Create db row.
-        session.add(summoner_data)
-        session.commit()
 
         embed_data = EmbedData()
         embed_data.title = "Solo/Duo Rank"
@@ -216,6 +202,7 @@ async def get_rank(ctx, *, name: str):  # using * for get a summoner name with s
         await ctx.send(embed=create_embed(embed_data))
 
 
+# TODO: REWORK THIS WITHOUT pd
 @bot.command(
     name="last_match",
     help="Displays the information about the latest game of the summoner.",
@@ -223,16 +210,26 @@ async def get_rank(ctx, *, name: str):  # using * for get a summoner name with s
 async def get_last_match(ctx, *, name: str):
     """Sends the summoner's last match information to the bot"""
     try:
-        last_match_info = previous_match(name)
-        dfi.export(last_match_info, "df_styled.png")
-        file = discord.File("df_styled.png")
-        embed = discord.Embed()
-        embed.set_image(url="attachment://df_styled.png")
-        await ctx.send(embed=embed, file=file)
-        os.remove("df_styled.png")
+
+        # last_match_info = previous_match(name)
+        embed = discord.Embed(
+            title="last match",
+            description="Under development",
+            color=discord.Color.red(),
+        )
+        # dfi.export(last_match_info, "df_styled.png")
+        # file = discord.File("df_styled.png")
+        # embed = discord.Embed()
+        # embed.set_image(url="attachment://df_styled.png")
+        await ctx.send(
+            embed=embed,
+            # file=file
+        )
+        # os.remove("df_styled.png")
 
     # pylint: disable=broad-except
     except Exception as e_values:
+        print(e_values)
         # 404 error means Data not found in API
         if "404" in str(e_values):
             error_title = f'Summoner "{name}" is not found'
@@ -253,8 +250,8 @@ async def get_last_match(ctx, *, name: str):
         await ctx.send(embed=create_embed(embed_data))
 
 
-# pylint: disable=too-many-branches, too-many-statements
 @bot.command(name="add", help="Add the players to the list")
+# pylint: disable=too-many-locals, too-many-branches
 async def add_summoner(ctx, *, message):
     """Writes list of summoners to local
     json file and sends the list to the bot"""
@@ -264,82 +261,93 @@ async def add_summoner(ctx, *, message):
         async with ctx.typing():
             await asyncio.sleep(1)
 
-        # create a directory containing json file to store data for added summoners
-        if not os.path.exists(json_path):
-            os.makedirs(data_folder_path, exist_ok=True)
-            with open(json_path, "w"):
-                pass
-
         # converting the message into list of summoners
-        player_list = message.split(",")
-
-        # for importing data from json file
-        file_data = ""
-
-        # initializing total number of players for counting both incoming and existing summoners
-        total_number_of_players = 0
+        # Split by ',' and remove leading/trailling white spaces.
+        user_input_names = [x.strip() for x in message.split(",")]
 
         # initializing server id to a variable
         server_id = str(ctx.guild.id)
 
-        # storing the json file into a variable
-        if os.path.getsize(json_path) > 0:
-            with open(json_path, "r") as file:
-                file_data = json.load(file)
+        # initializing total number of players for counting both incoming and existing summoners
+        total_number_of_players = 0
 
-            # if server id exist in json, add number of players
-            if server_id in file_data:
-                total_number_of_players += len(file_data[server_id])
+        # Grab team member list from db
+        member_list_query_result = (
+            session.query(TeamMembers)
+            .filter(TeamMembers.channel_id == server_id)
+            .first()
+        )
 
-                # remove summoners from incoming data if it exists in json file with same server ID
-                for player_name in player_list:
-                    if any(
-                        player_name in player["user_name"]
-                        for player in file_data[server_id]
-                    ):
-                        player_list.remove(player_name)
+        # If we have record;
+        # Check # of players that were save in the list.
+        # Remove names from user input if we already have the name in record.
+        if member_list_query_result:
+            # Convert into dict.
+            member_list_dict = dict(member_list_query_result.__dict__)
+            total_number_of_players += len(member_list_dict["members"])
 
-        # add number of summoners from incoming data to total number of players
-        total_number_of_players += len(player_list)
+            for member in member_list_dict["members"]:
+                record_name = member["user_name"]
+                name_record_input_match = pydash.find(
+                    user_input_names,
+                    lambda input_name: (input_name == record_name),
+                )
 
+                if name_record_input_match:
+                    user_input_names.remove(name_record_input_match)
+
+        # 'user_input_names' should be filtered with names that we don't have record of.
+        total_number_of_players += len(user_input_names)
+
+        # If 'total_number_of_players' will be more than 10, error out.
         if total_number_of_players > MAX_NUM_PLAYERS_TEAM:
             raise Exception(
                 "Limit Exceeded",
                 "You have exceeded a limit of 10 summoners! \
                 \nPlease add {0} more summoners!".format(
-                    MAX_NUM_PLAYERS_TEAM - total_number_of_players + len(player_list)
+                    MAX_NUM_PLAYERS_TEAM
+                    - total_number_of_players
+                    + len(user_input_names)
                 ),
             )
 
+        # If all the summoners are already in record, return.
+        if total_number_of_players == 0:
+            await display_current_list_of_summoners(ctx)
+            return
+
         # make dictionary for newly coming in players
-        players_list_info = create_summoner_list(player_list, server_id)
+        players_list_info = create_summoner_list(user_input_names, server_id)
 
-        # if no file exist in path or if the file is empty, dump incoming data
-        if os.path.getsize(json_path) == 0:
-            with open(json_path, "w") as file:
-                json.dump(players_list_info, file, indent=4)
-                file_data = players_list_info
+        # If we had a db record, update.
+        if member_list_query_result:
+            members_record = dict(member_list_query_result.__dict__)
+            members_update = members_record["members"]
 
-        elif server_id not in file_data:
+            for player_list in players_list_info[server_id]:
+                members_update.append(player_list)
+            # Set new member list.
+            member_list_query_result.members = members_update
 
-            file_data.update(players_list_info)
-
-            with open(json_path, "w") as file:
-                json.dump(file_data, file, indent=4)
-
-        # append data to the matching server id
+            # Update record.
+            session.commit()
         else:
-            file_data[server_id] += players_list_info[server_id]
+            # If we don't have a record, create one.
+            members_puuid = []
+            # TODO: No need to group by server_id once we have everything migrated to db.
+            for player_list in players_list_info[server_id]:
+                members_puuid.append(player_list)
+            create_member = TeamMembers(server_id, members_puuid)
 
-            with open(json_path, "w") as file:
-                json.dump(file_data, file, indent=4)
+            # Create db row.
+            session.add(create_member)
+            session.commit()
 
         # display list of summoners
         await display_current_list_of_summoners(ctx)
 
     # pylint: disable=broad-except
     except Exception as e_values:
-
         if "404" in str(e_values):
             error_title = "Invalid Summoner Name"
             error_description = f"`{e_values.args[1]}` is not a valid name. \
@@ -358,9 +366,11 @@ async def add_summoner(ctx, *, message):
         await ctx.send(embed=create_embed(embed_data))
 
         # display list of summoners
+        # TODO this shouldn't call another decorator function.
         await display_current_list_of_summoners(ctx)
 
 
+# TODO Refactor into util function.
 @bot.command(name="list", help="Display list of summoner")
 async def display_current_list_of_summoners(ctx):
     """For displaying current list of summoners"""
@@ -369,55 +379,54 @@ async def display_current_list_of_summoners(ctx):
         # server id
         server_id = str(ctx.guild.id)
 
-        file_data = ""
+        total_number_of_players = 0
 
-        if os.path.getsize(json_path) == 0 or not os.path.exists(json_path):
-            raise Exception
-
-        # get data from the json file and save to file data
-
-        with open(json_path, "r") as file:
-            file_data = json.load(file)
-
-        if not server_id in file_data.keys():
-            raise Exception
-
-        total_number_of_players = len(file_data[server_id])
-
-        # making embed for list of summoners
-        embed_data = EmbedData()
-        embed_data.title = "List of Summoners"
-        embed_data.description = "** **"
-        embed_data.color = discord.Color.dark_gray()
-
-        # for saving output str
-        output_str = ""
-
-        for count in range(len(file_data[server_id])):
-
-            output_str += (
-                "`{0}` {1}\n".format(
-                    UNCOMMON_TIER_DISPLAY_MAP.get(
-                        file_data[server_id][count]["tier_division"]
-                    ),
-                    file_data[server_id][count]["formatted_user_name"],
-                )
-                if file_data[server_id][count]["tier_division"] in UNCOMMON_TIERS
-                else "`{0}{1}` {2}\n".format(
-                    file_data[server_id][count]["tier_division"][0],
-                    TIER_RANK_MAP.get(file_data[server_id][count]["tier_rank_number"]),
-                    file_data[server_id][count]["formatted_user_name"],
-                )
-            )
-
-        embed_data.fields = []
-        embed_data.fields.append(
-            {"name": "Summoners", "value": output_str, "inline": False}
+        member_list_query_result = (
+            session.query(TeamMembers)
+            .filter(TeamMembers.channel_id == server_id)
+            .first()
         )
 
-        await ctx.send(embed=create_embed(embed_data))
+        # If we have record, print
+        if member_list_query_result:
 
-        await ctx.send(f"Total Number of Summoners: {total_number_of_players}")
+            member_list_dict = dict(member_list_query_result.__dict__)
+            total_number_of_players += len(member_list_dict["members"])
+
+            # making embed for list of summoners
+            embed_data = EmbedData()
+            embed_data.title = "List of Summoners"
+            embed_data.description = "** **"
+            embed_data.color = discord.Color.dark_gray()
+
+            # for saving output str
+            output_str = ""
+            for member in member_list_dict["members"]:
+                output_str += (
+                    "`{0}` {1}\n".format(
+                        UNCOMMON_TIER_DISPLAY_MAP.get(member["tier_division"]),
+                        member["formatted_user_name"],
+                    )
+                    if member["tier_division"] in UNCOMMON_TIERS
+                    else "`{0}{1}` {2}\n".format(
+                        member["tier_division"][0],
+                        TIER_RANK_MAP.get(member["tier_rank_number"]),
+                        member["formatted_user_name"],
+                    )
+                )
+
+            embed_data.fields = []
+            embed_data.fields.append(
+                {"name": "Summoners", "value": output_str, "inline": False}
+            )
+
+            await ctx.send(embed=create_embed(embed_data))
+
+            await ctx.send(f"Total Number of Summoners: {total_number_of_players}")
+
+        else:
+            # If we don't have record, throw.
+            raise Exception
 
     # pylint: disable=broad-except
     except Exception:
@@ -427,8 +436,9 @@ async def display_current_list_of_summoners(ctx):
         embed_data.color = discord.Color.orange()
         await ctx.send(embed=create_embed(embed_data))
 
-# pylint: disable=too-many-locals
+
 @bot.command(name="teams", help="Display two teams")
+# pylint: disable=too-many-locals, too-many-branches
 async def display_teams(ctx):
     """Make and display teams to bot from list of summoners in json"""
     try:
@@ -547,19 +557,19 @@ async def remove_summoner(ctx, *, message):
 
         # Exception case: attempt to remove more than 10 players
         if len(summoner_to_remove_input) > MAX_NUM_PLAYERS_TEAM:
-            raise Exception (
+            raise Exception(
                 "Limit Exceeded",
                 "You tried to remove more than 10 summoners! \
                 \nPlease remove {0} less summoners or consider using `clear` command".format(
                     MAX_NUM_PLAYERS_TEAM - len(summoner_to_remove_input)
-                )
+                ),
             )
 
         # Exception case: data/data.json file does not exist
         if not os.path.exists(json_path):
-            raise Exception (
+            raise Exception(
                 "Limit Exceeded",
-                "There is no summoner(s) added in the game.\nPlease add summoner(s) first!"
+                "There is no summoner(s) added in the game.\nPlease add summoner(s) first!",
             )
 
         # for importing data from json file
@@ -571,22 +581,25 @@ async def remove_summoner(ctx, *, message):
             with open(json_path, "r") as file:
                 file_data = json.load(file)
         else:
-            raise Exception (
+            raise Exception(
                 "Limit Exceeded",
-                "There is no summoner(s) added in the game.\nPlease add summoner(s) first!"
+                "There is no summoner(s) added in the game.\nPlease add summoner(s) first!",
             )
 
         unmatched_summoner_name = []
         if server_id in file_data:
             for player_name in summoner_to_remove_input:
                 # pylint: disable=cell-var-from-loop
-                matched_summoner = pydash.find(file_data[server_id],
-                    lambda x: normalize_name(x["user_name"])==normalize_name(player_name))
+                matched_summoner = pydash.find(
+                    file_data[server_id],
+                    lambda x: normalize_name(x["user_name"])
+                    == normalize_name(player_name),
+                )
                 if pydash.predicates.is_empty(matched_summoner):
                     unmatched_summoner_name.append(player_name)
                 else:
                     file_data[server_id].remove(matched_summoner)
-                    matched_summoner["user_name_input"]=player_name
+                    matched_summoner["user_name_input"] = player_name
             with open(json_path, "w") as file:
                 json.dump(file_data, file, indent=4)
             # Exception case: unmatched_summoner_name identified
@@ -595,19 +608,21 @@ async def remove_summoner(ctx, *, message):
                     "Unregistered Summoner(s)",
                     "Summoners: {0} were not registered for the game".format(
                         str(unmatched_summoner_name)
-                    )
+                    ),
                 )
         else:
             raise Exception(
                 "Limit Exceeded",
-                "There is no summoner(s) added in the game.\nPlease add summoner(s) first!"
+                "There is no summoner(s) added in the game.\nPlease add summoner(s) first!",
             )
         # display list of summoners
         await display_current_list_of_summoners(ctx)
 
     # pylint: disable=broad-except
     except Exception as e_values:
-        if "Limit Exceeded" in str(e_values) or "Unregistered Summoner(s)" in str(e_values):
+        if "Limit Exceeded" in str(e_values) or "Unregistered Summoner(s)" in str(
+            e_values
+        ):
             error_title = e_values.args[0]
             error_description = e_values.args[1]
         else:

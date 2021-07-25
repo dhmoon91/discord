@@ -12,3 +12,4 @@ pre-commit
 SQLAlchemy
 psycopg2
 alembic
+sqlalchemy-json

@@ -5,5 +5,5 @@ repos:
         name: pylint
         stages: [push]
         language: system
-        entry: pylint --disable=C0116 --ignore=venv
+        entry: pylint --rcfile=.pylintrc
         types: [python]
