@@ -5,5 +5,5 @@ repos:
         name: pylint
         stages: [push]
         language: system
-        entry: pylint --rcfile=.pylintrc `ls -R|grep .py$|xargs`
+        entry: pylint --rcfile=.pylintrc
         types: [python]
