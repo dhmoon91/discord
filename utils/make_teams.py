@@ -17,12 +17,12 @@ def make_teams(list_of_summoners: dict):
         # since tier rank numbers for unranked, master, gm and challengers
         # are automatically set to I but we need IV values for all of these tiers
         if summoner["tier_division"] in UNCOMMON_TIERS:
-            summoner["tier_rank_number"] = "IV"
+            summoner["tier_rank"] = "IV"
 
         # calculate value by adding tier_division, tier_rank_number
         rank_value = (
             float(TIER_VALUE.get(summoner["tier_division"]))
-            + RANK_VALUE.get(summoner["tier_rank_number"]) * 1000
+            + RANK_VALUE.get(summoner["tier_rank"]) * 1000
             + summoner["league_points"]
         )
 
