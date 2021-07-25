@@ -2,17 +2,16 @@
 summoners model mapping
 
 """
-import datetime
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String
 from ..db import Base
+from .base import BaseMixin
 
 
-class Summoners(Base):
+class Summoners(BaseMixin, Base):
     """summoners model definition"""
 
     __tablename__ = "summoners"
 
-    id = Column(Integer, primary_key=True)
     summoner_name = Column(String)
     summoner_icon_image_url = Column(String)
     summoner_level = Column(Integer)
@@ -23,31 +22,16 @@ class Summoners(Base):
     solo_win = Column(Integer)
     solo_loss = Column(Integer)
     league_points = Column(Integer)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(
-        DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow
-    )
 
-    def __init__(
-        self,
-        summoner_name,
-        summoner_icon_image_url,
-        summoner_level,
-        region,
-        puuid,
-        tier_division,
-        tier_rank,
-        solo_win,
-        solo_loss,
-        league_points,
-    ):
-        self.summoner_name = summoner_name
-        self.summoner_icon_image_url = summoner_icon_image_url
-        self.summoner_level = summoner_level
-        self.region = region
-        self.puuid = puuid
-        self.tier_division = tier_division
-        self.tier_rank = tier_rank
-        self.solo_win = solo_win
-        self.solo_loss = solo_loss
-        self.league_points = league_points
+    def __init__(self, summoner_data):
+        super().__init__()
+        self.summoner_name = summoner_data["summoner_name"]
+        self.summoner_icon_image_url = (summoner_data["summoner_icon_image_url"],)
+        self.summoner_level = (summoner_data["summoner_level"],)
+        self.region = ("na1",)
+        self.puuid = (summoner_data["puuid"],)
+        self.tier_division = (summoner_data["tier_division"],)
+        self.tier_rank = (summoner_data["tier_rank"],)
+        self.solo_win = (summoner_data["solo_win"],)
+        self.solo_loss = (summoner_data["solo_loss"],)
+        self.league_points = (summoner_data["league_points"],)

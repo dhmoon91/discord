@@ -8,6 +8,11 @@ from os.path import dirname, join
 # Discord
 import discord
 
+from .constants import (
+    TIER_RANK_MAP,
+    UNCOMMON_TIERS,
+    UNCOMMON_TIER_DISPLAY_MAP,
+)
 
 root_dirname = dirname(dirname(__file__))
 
@@ -61,4 +66,24 @@ def create_embed(embed_object):
 
 def normalize_name(string):
     """Normalize name by changing to lower case and removing whitespaces"""
-    return string.lower().replace(" ","")
+    return string.lower().replace(" ", "")
+
+
+def create_team_string(team_members):
+    """Create red/blue team display string"""
+    team_output_string = ""
+    for member in team_members:
+        team_output_string += (
+            "`{0}{1}` {2}\n".format(
+                member["tier_division"][0],
+                TIER_RANK_MAP.get(member["tier_rank"]),
+                member["summoner_name"],
+            )
+            # different formatting for uncommon tiers
+            if member["tier_division"] not in UNCOMMON_TIERS
+            else "`{0}` {1}\n".format(
+                UNCOMMON_TIER_DISPLAY_MAP.get(member["tier_division"]),
+                member["summoner_name"],
+            )
+        )
+    return team_output_string
