@@ -53,6 +53,7 @@ class BaseMixin(Base):
         Update a row in table
         NOT USED ATM.
         """
+        orig_session.add(self)
         if commit:
             try:
                 orig_session.commit()
