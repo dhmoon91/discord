@@ -8,4 +8,4 @@ repos:
         entry: pylint
         types: [python]
         args:
-        -   --rcfile=pylint.rc
+        -   --rcfile=.pylintrc
