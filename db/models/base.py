@@ -1,5 +1,5 @@
-from sqlalchemy import Column, Integer, DateTime
 import datetime
+from sqlalchemy import Column, Integer, DateTime
 from ..db import Session, Base
 
 session = Session()
@@ -49,6 +49,10 @@ class BaseMixin(Base):
 
     # TODO: Not working figure out why
     def update(self, orig_session=session, commit=True):
+        """
+        Update a row in table
+        NOT USED ATM.
+        """
         if commit:
             try:
                 orig_session.commit()
