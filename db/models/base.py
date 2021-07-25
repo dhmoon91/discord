@@ -16,44 +16,44 @@ class BaseMixin(Base):
         DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow
     )
 
-    def create(self, sessionOrig=session, commit=True):
+    def create(self, orig_session=session, commit=True):
         """Create a row in table
-        sessionOrig will be defaulted to session.
+        orig_session will be defaulted to session.
         """
-        sessionOrig.add(self)
+        orig_session.add(self)
         if commit:
             try:
-                sessionOrig.commit()
+                orig_session.commit()
             except Exception as e_values:
-                sessionOrig.rollback()
+                orig_session.rollback()
                 raise e_values
             finally:
-                sessionOrig.close()
+                orig_session.close()
 
-    def delete(self, sessionOrig=session, commit=True):
+    def delete(self, orig_session=session, commit=True):
         """
         Delete a row in table
 
-        We need to use the session passed in
+        We need to use the orig_session, the session passed into this function,
         since the session to query 'to delete' row will still be opened.
         """
-        sessionOrig.delete(self)
+        orig_session.delete(self)
         if commit:
             try:
-                sessionOrig.commit()
+                orig_session.commit()
             except Exception as e_values:
-                sessionOrig.rollback()
+                orig_session.rollback()
                 raise e_values
             finally:
-                sessionOrig.close()
+                orig_session.close()
 
     # TODO: Not working figure out why
-    def update(self, sessionOrig=session, commit=True):
+    def update(self, orig_session=session, commit=True):
         if commit:
             try:
-                sessionOrig.commit()
+                orig_session.commit()
             except Exception as e_values:
-                sessionOrig.rollback()
+                orig_session.rollback()
                 raise e_values
             finally:
-                sessionOrig.close()
+                orig_session.close()

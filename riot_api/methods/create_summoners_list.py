@@ -1,7 +1,7 @@
 from .get_rank import get_summoner_rank
 
 
-def create_summoner_list(user_input_list_names: list, server_id: str):
+def create_summoner_list(user_input_list_names: list):
     """Gets the list of summoner names and returns the information abou the summoners
     Parameters:
     players_list (list): list of summoner names

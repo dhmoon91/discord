@@ -19,5 +19,6 @@ class TeamMembers(BaseMixin, Base):
         channel_id,
         members,
     ):
+        super().__init__()
         self.channel_id = channel_id
         self.members = members

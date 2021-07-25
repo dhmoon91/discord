@@ -4,7 +4,6 @@ Bot codes
 
 
 import os
-import json
 import asyncio
 import pydash
 
@@ -134,6 +133,10 @@ async def help_command(ctx):
 async def get_rank(ctx, *, name: str):  # using * for get a summoner name with space
     """Sends the summoner's rank information to the bot"""
     try:
+        # typing indicator
+        async with ctx.typing():
+            await asyncio.sleep(1)
+
         summoner_info = get_summoner_rank(name)
 
         embed_data = EmbedData()
@@ -321,7 +324,7 @@ async def add_summoner(ctx, *, message):
             return
 
         # make dictionary for newly coming in players
-        new_team_members = create_summoner_list(user_input_names, server_id)
+        new_team_members = create_summoner_list(user_input_names)
 
         # If we had a db record, update.
         if members_list_record_cached:
@@ -333,7 +336,8 @@ async def add_summoner(ctx, *, message):
                 members_update.append(player_list)
 
             # Set new member list.
-            # Note; was going to use members_list_record_cached['raw'] to update, but looks like it doesn't work.
+            # Note; was going to use members_list_record_cached['raw'] to update,
+            # but looks like it doesn't work.
             member_list_query_result = (
                 session.query(TeamMembers)
                 .filter(TeamMembers.channel_id == server_id)

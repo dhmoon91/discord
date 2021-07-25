@@ -24,6 +24,7 @@ class Summoners(BaseMixin, Base):
     league_points = Column(Integer)
 
     def __init__(self, summoner_data):
+        super().__init__()
         self.summoner_name = summoner_data["summoner_name"]
         self.summoner_icon_image_url = (summoner_data["summoner_icon_image_url"],)
         self.summoner_level = (summoner_data["summoner_level"],)
