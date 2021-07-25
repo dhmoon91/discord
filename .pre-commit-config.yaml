@@ -3,6 +3,7 @@ repos:
     hooks:
       - id: pylint
         name: pylint
+        stages: [push]
         language: system
         entry: pylint
         types: [python]
