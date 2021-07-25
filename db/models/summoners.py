@@ -14,6 +14,8 @@ class Summoners(Base):
 
     id = Column(Integer, primary_key=True)
     summoner_name = Column(String)
+    summoner_icon_image_url = Column(String)
+    summoner_level = Column(Integer)
     region = Column(String(20))
     puuid = Column(String)
     tier_division = Column(String(10))
@@ -29,6 +31,8 @@ class Summoners(Base):
     def __init__(
         self,
         summoner_name,
+        summoner_icon_image_url,
+        summoner_level,
         region,
         puuid,
         tier_division,
@@ -38,6 +42,8 @@ class Summoners(Base):
         league_points,
     ):
         self.summoner_name = summoner_name
+        self.summoner_icon_image_url = summoner_icon_image_url
+        self.summoner_level = summoner_level
         self.region = region
         self.puuid = puuid
         self.tier_division = tier_division
