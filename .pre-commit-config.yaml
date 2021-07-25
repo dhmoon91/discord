@@ -5,5 +5,7 @@ repos:
         name: pylint
         stages: [push]
         language: system
-        entry: pylint --rcfile=.pylintrc
+        entry: pylint
         types: [python]
+        args:
+        -   --rcfile=pylint.rc
