@@ -41,6 +41,11 @@ from utils.constants import (
     UNCOMMON_TIERS,
     UNCOMMON_TIER_DISPLAY_MAP,
 )
+from utils.help_commands import (
+    create_help_fields,
+    create_help_embed,
+    create_help_title_desc,
+)
 
 intents = discord.Intents.default()
 # pylint: disable=assigning-non-slot
@@ -187,33 +192,18 @@ async def get_rank(ctx, name="--help"):  # set name attribute to default help co
 
         # displays the get_rank's help command
         if name == "--help":
-            embed_data = EmbedData()
-            embed_data.title = f"How to use {get_rank.name} command"
-            embed_data.description = ("** **\n<@!{0}> **{1} summoner_name**").format(
-                bot.user.id, get_rank.name
-            )
-            embed_data.color = discord.Color.blurple()
-
-            embed_data.fields = []
+            create_help_title_desc(bot, f"{get_rank.name}", True)
 
             # pylint: disable=line-too-long
-            embed_data.fields.append(
-                {
-                    "name": "** **",
-                    "value": "{0}\n\n{1}\n\n{2}".format(
-                        "This command displays the information about the summoner.",
-                        "The information includes the summoner's name, rank, total games played and the win rate.",
-                        f"__NOTE__:   **{get_rank.name}** command only accepts one summoner name.",
-                    ),
-                    "inline": False,
-                }
+            create_help_fields(
+                [
+                    "This command displays the information about the summoner.",
+                    "The information includes the summoner's name, rank, total games played and the win rate.",
+                    f"__NOTE__:   **{get_rank.name}** command only accepts one summoner name.",
+                ]
             )
 
-            embed_data.fields.append(
-                {"name": "** **", "value": "`All Data from NA server`", "inline": False}
-            )
-
-            return await ctx.send(embed=create_embed(embed_data))
+            return await ctx.send(embed=create_help_embed())
 
         summoner_info = get_summoner_rank(name)
 
@@ -318,33 +308,18 @@ async def get_last_match(ctx, name="--help"):
 
         # displays the get_last_match's help command
         if name == "--help":
-            embed_data = EmbedData()
-            embed_data.title = f"How to use {get_last_match.name} command"
-            embed_data.description = ("** **\n<@!{0}> **{1} summoner_name**").format(
-                bot.user.id, get_last_match.name
-            )
-            embed_data.color = discord.Color.blurple()
-
-            embed_data.fields = []
+            create_help_title_desc(bot, f"{get_last_match.name}", True)
 
             # pylint: disable=line-too-long
-            embed_data.fields.append(
-                {
-                    "name": "** **",
-                    "value": "{0}\n\n{1}\n\n{2}".format(
-                        "This command displays the information about the latest game of the summoner.",
-                        "The information includes the name of all of the summoners, champions played, K/D/A and damage dealt",
-                        f"__NOTE__:   **{get_last_match.name}** command only accepts one summoner name.",
-                    ),
-                    "inline": False,
-                }
+            create_help_fields(
+                [
+                    "This command displays the information about the latest game of the summoner.",
+                    "The information includes the name of all of the summoners, champions played, K/D/A and damage dealt",
+                    f"__NOTE__:   **{get_last_match.name}** command only accepts one summoner name.",
+                ]
             )
 
-            embed_data.fields.append(
-                {"name": "** **", "value": "`All Data from NA server`", "inline": False}
-            )
-
-            return await ctx.send(embed=create_embed(embed_data))
+            return await ctx.send(embed=create_help_embed())
 
         last_match_info = previous_match(name)
         dfi.export(last_match_info, "df_styled.png")
@@ -389,34 +364,18 @@ async def add_summoner(ctx, *, message="--help"):
 
         # displays the add_summoner's help command
         if message == "--help":
-            embed_data = EmbedData()
-            embed_data.title = f"How to use {add_summoner.name} command"
-            embed_data.description = ("** **\n<@!{0}> **{1} summoner_name**").format(
-                bot.user.id, add_summoner.name
-            )
-            embed_data.color = discord.Color.blurple()
+            create_help_title_desc(bot, f"{add_summoner.name}", True)
 
-            embed_data.fields = []
-
-            # pylint: disable=line-too-long
-            embed_data.fields.append(
-                {
-                    "name": "** **",
-                    "value": "{}\n\n{}\n\n{}\n\n{}".format(
-                        "This command adds summoner(s) to a list for making teams",
-                        "This command also displays the list of summoners on standby.",
-                        "The information includes a summoner's name, tier division, and rank number.",
-                        f"Adding multiple summoners: `@{bot.user.name} add name1, name2`",
-                    ),
-                    "inline": False,
-                }
+            create_help_fields(
+                [
+                    "This command adds summoner(s) to a list for making teams",
+                    "This command also displays the list of summoners on standby.",
+                    "The information includes a summoner's name, tier division, and rank number.",
+                    f"Adding multiple summoners: `@{bot.user.name} add name1, name2`",
+                ]
             )
 
-            embed_data.fields.append(
-                {"name": "** **", "value": "`All Data from NA server`", "inline": False}
-            )
-
-            return await ctx.send(embed=create_embed(embed_data))
+            return await ctx.send(embed=create_help_embed())
 
         # create a directory containing json file to store data for added summoners
         if not os.path.exists(json_path):
@@ -555,32 +514,17 @@ async def display_current_list_of_summoners(ctx, name=None):
 
         # displays the display_current_list_of_summoners's help command
         if name is not None:
-            embed_data = EmbedData()
-            embed_data.title = (
-                f"How to use {display_current_list_of_summoners.name} command"
-            )
-            embed_data.description = ("** **\n<@!{0}> **{1}**").format(
-                bot.user.id, display_current_list_of_summoners.name
-            )
-            embed_data.color = discord.Color.blurple()
-
-            embed_data.fields = []
-            # pylint: disable=line-too-long
-            embed_data.fields.append(
-                {
-                    "name": "** **",
-                    "value": "{0}\n\n{1}".format(
-                        "This command displays a list of summoner(s) on standby.",
-                        "The information includes the summoner's name, tier division, and rank number.",
-                    ),
-                    "inline": False,
-                }
+            create_help_title_desc(
+                bot, f"{display_current_list_of_summoners.name}", False
             )
 
-            embed_data.fields.append(
-                {"name": "** **", "value": "`All Data from NA server`", "inline": False}
+            create_help_fields(
+                [
+                    "This command displays a list of summoner(s) on standby.",
+                    "The information includes the summoner's name, tier division, and rank number.",
+                ]
             )
-            return await ctx.send(embed=create_embed(embed_data))
+            return await ctx.send(embed=create_help_embed())
 
         # server id
         server_id = str(ctx.guild.id)
@@ -650,31 +594,15 @@ async def display_teams(ctx, name=None):
 
         # displays the display_teams's help command
         if name is not None:
-            embed_data = EmbedData()
-            embed_data.title = f"How to use {display_teams.name} command"
+            create_help_title_desc(bot, f"{display_teams.name}", False)
 
-            embed_data.description = ("** **\n<@!{0}> **{1}**").format(
-                bot.user.id, display_teams.name
+            create_help_fields(
+                [
+                    "This command displays TEAM BLUE and RED for a custom game.",
+                    "The information includes a summoner's name, tier division, and rank number.",
+                ]
             )
-            embed_data.color = discord.Color.blurple()
-
-            embed_data.fields = []
-            # pylint: disable=line-too-long
-            embed_data.fields.append(
-                {
-                    "name": "** **",
-                    "value": "{0}\n\n{1}".format(
-                        "This command displays TEAM BLUE and RED for a custom game.",
-                        "The information includes a summoner's name, tier division, and rank number.",
-                    ),
-                    "inline": False,
-                }
-            )
-
-            embed_data.fields.append(
-                {"name": "** **", "value": "`All Data from NA server`", "inline": False}
-            )
-            return await ctx.send(embed=create_embed(embed_data))
+            return await ctx.send(embed=create_help_embed())
 
         # server id
         server_id = str(ctx.guild.id)
@@ -754,34 +682,18 @@ async def remove_summoner(ctx, *, message="--help"):
 
         # displays the remove_summoner's help command
         if message == "--help":
-            embed_data = EmbedData()
-            embed_data.title = f"How to use {remove_summoner.name} command"
-            embed_data.description = ("** **\n<@!{0}> **{1} summoner_name**").format(
-                bot.user.id, remove_summoner.name
-            )
-            embed_data.color = discord.Color.blurple()
+            create_help_title_desc(bot, f"{remove_summoner.name}", True)
 
-            embed_data.fields = []
-
-            # pylint: disable=line-too-long
-            embed_data.fields.append(
-                {
-                    "name": "** **",
-                    "value": "{}\n\n{}\n\n{}\n\n{}".format(
-                        "This command removes player(s) from the list on standby for a custom game",
-                        "This command also displays the list of summoners on standby.",
-                        "The information includes a summoner's name, tier division, and rank number.",
-                        f"Remove multiple summoners: `@{bot.user.name} add name1, name2`",
-                    ),
-                    "inline": False,
-                }
+            create_help_fields(
+                [
+                    "This command removes player(s) from the list on standby for a custom game",
+                    "This command also displays the list of summoners on standby.",
+                    "The information includes a summoner's name, tier division, and rank number.",
+                    f"Remove multiple summoners: `@{bot.user.name} add name1, name2`",
+                ]
             )
 
-            embed_data.fields.append(
-                {"name": "** **", "value": "`All Data from NA server`", "inline": False}
-            )
-
-            return await ctx.send(embed=create_embed(embed_data))
+            return await ctx.send(embed=create_help_embed())
 
         # converting the message into list of summoners
         summoner_to_remove_input = [x.strip() for x in message.split(",")]
@@ -892,30 +804,14 @@ async def clear_list_of_summoners(ctx, name=None):
 
         # displays the clear_list_of_summoners's help command
         if name is not None:
-            embed_data = EmbedData()
-            embed_data.title = f"How to use {clear_list_of_summoners.name} command"
+            create_help_title_desc(bot, f"{clear_list_of_summoners.name}", False)
 
-            embed_data.description = ("** **\n<@!{0}> **{1}**").format(
-                bot.user.id, clear_list_of_summoners.name
+            create_help_fields(
+                [
+                    "This command clear player(s) from the list on standby for a custom game."
+                ]
             )
-            embed_data.color = discord.Color.blurple()
-
-            embed_data.fields = []
-            # pylint: disable=line-too-long
-            embed_data.fields.append(
-                {
-                    "name": "** **",
-                    "value": "{0}".format(
-                        "This command clear player(s) from the list on standby for a custom game."
-                    ),
-                    "inline": False,
-                }
-            )
-
-            embed_data.fields.append(
-                {"name": "** **", "value": "`All Data from NA server`", "inline": False}
-            )
-            return await ctx.send(embed=create_embed(embed_data))
+            return await ctx.send(embed=create_help_embed())
 
         # for importing data from json file
         file_data = ""
