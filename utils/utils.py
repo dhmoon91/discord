@@ -60,7 +60,6 @@ def create_embed(embed_object):
         return embed
     # pylint: disable=broad-except
     except Exception as e_values:
-        print("check")
         print("error embed")
         print(e_values)
 
@@ -68,7 +67,6 @@ def create_embed(embed_object):
 def normalize_name(string):
     """Normalize name by changing to lower case and removing whitespaces"""
     return string.lower().replace(" ", "")
-<<<<<<< HEAD
 
 
 def create_team_string(team_members):
@@ -89,5 +87,3 @@ def create_team_string(team_members):
             )
         )
     return team_output_string
-=======
->>>>>>> 8cfd4cb (refactoring repeated codes from bot.py)

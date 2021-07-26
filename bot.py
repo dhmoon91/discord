@@ -41,6 +41,8 @@ from utils.constants import (
     UNCOMMON_TIERS,
     UNCOMMON_TIER_DISPLAY_MAP,
 )
+
+
 from utils.help_commands import (
     create_help_fields,
     create_help_embed,
@@ -181,7 +183,6 @@ async def help_command(ctx, name=None):
         await ctx.send(embed=err_embed)
 
 
-# =================
 @bot.command(name="rank", help="Displays the information about the summoner.")
 async def get_rank(ctx, name="--help"):  # set name attribute to default help command
     """Sends the summoner's rank information to the bot"""
@@ -286,22 +287,6 @@ async def get_rank(ctx, name="--help"):  # set name attribute to default help co
 async def get_last_match(ctx, name="--help"):
     """Sends the summoner's last match information to the bot"""
     try:
-
-        # last_match_info = previous_match(name)
-        embed = discord.Embed(
-            title="last match",
-            description="Under development",
-            color=discord.Color.red(),
-        )
-        # dfi.export(last_match_info, "df_styled.png")
-        # file = discord.File("df_styled.png")
-        # embed = discord.Embed()
-        # embed.set_image(url="attachment://df_styled.png")
-        await ctx.send(
-            embed=embed,
-            # file=file
-        )
-        # os.remove("df_styled.png")
         # typing indicator
         async with ctx.typing():
             await asyncio.sleep(1)
@@ -321,13 +306,21 @@ async def get_last_match(ctx, name="--help"):
 
             return await ctx.send(embed=create_help_embed())
 
-        last_match_info = previous_match(name)
-        dfi.export(last_match_info, "df_styled.png")
-        file = discord.File("df_styled.png")
-        embed = discord.Embed()
-        embed.set_image(url="attachment://df_styled.png")
-        await ctx.send(embed=embed, file=file)
-        os.remove("df_styled.png")
+        # last_match_info = previous_match(name)
+        embed = discord.Embed(
+            title="last match",
+            description="Under development",
+            color=discord.Color.red(),
+        )
+        # dfi.export(last_match_info, "df_styled.png")
+        # file = discord.File("df_styled.png")
+        # embed = discord.Embed()
+        # embed.set_image(url="attachment://df_styled.png")
+        await ctx.send(
+            embed=embed,
+            # file=file
+        )
+        # os.remove("df_styled.png")
 
     # pylint: disable=broad-except
     except Exception as e_values:
@@ -351,8 +344,8 @@ async def get_last_match(ctx, name="--help"):
         await ctx.send(embed=create_embed(embed_data))
 
 
-# pylint: disable=too-many-locals, too-many-branches, too-many-statements
 @bot.command(name="add", help="Add summoner(s) to a list for making teams")
+# pylint: disable=too-many-locals, too-many-branches, too-many-statements
 async def add_summoner(ctx, *, message="--help"):
     """Writes list of summoners to local
     json file and sends the list to the bot"""
@@ -376,12 +369,6 @@ async def add_summoner(ctx, *, message="--help"):
             )
 
             return await ctx.send(embed=create_help_embed())
-
-        # create a directory containing json file to store data for added summoners
-        if not os.path.exists(json_path):
-            os.makedirs(data_folder_path, exist_ok=True)
-            with open(json_path, "w"):
-                pass
 
         # converting the message into list of summoners
         # Split by ',' and remove leading/trailling white spaces.
@@ -504,6 +491,7 @@ async def add_summoner(ctx, *, message="--help"):
         await display_current_list_of_summoners(ctx)
 
 
+# TODO Refactor into util function.
 @bot.command(name="list", help="Display the list of summoner ranks and names added")
 async def display_current_list_of_summoners(ctx, name=None):
     """For displaying current list of summoners"""
@@ -583,8 +571,8 @@ async def display_current_list_of_summoners(ctx, name=None):
         await ctx.send(embed=create_embed(embed_data))
 
 
-# pylint: disable=too-many-locals
 @bot.command(name="teams", help="Display TEAM BLUE and RED for a custom game")
+# pylint: disable=too-many-locals, too-many-branches
 async def display_teams(ctx, name=None):
     """Make and display teams to bot from list of summoners in json"""
     try:
@@ -813,9 +801,6 @@ async def clear_list_of_summoners(ctx, name=None):
             )
             return await ctx.send(embed=create_help_embed())
 
-        # for importing data from json file
-        file_data = ""
-        # initializing server id to a variable
         server_id = str(ctx.guild.id)
         member_list_query_result = (
             session.query(TeamMembers).filter(TeamMembers.channel_id == server_id).one()
