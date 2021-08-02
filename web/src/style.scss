@@ -1,0 +1,44 @@
+body {
+  font-family: 'Open Sans';
+}
+
+.btn {
+  padding: 0.5rem 1.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.btn-primary,
+.btn-primary:hover,
+.btn-primary:active,
+.btn-primary:visited,
+.btn-primary:focus {
+  background-color: white;
+  color: #406da2;
+  border-color: #406da2 !important;
+  border-radius: 20px !important;
+}
+
+.btn-secondary,
+.btn-secondary:hover,
+.btn-secondary:active,
+.btn-secondary:visited,
+.btn-secondary:focus {
+  background-color: #406da2;
+  color: white;
+  border-color: #406da2 !important;
+  border-radius: 20px !important;
+}
+
+.h1,
+h1 {
+  font-size: 3.5rem !important;
+  font-family: 'Roboto';
+  font-weight: 700;
+}
+
+.h2,
+h2 {
+  font-size: 2.5rem !important;
+  font-weight: 700;
+}

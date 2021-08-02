@@ -1,0 +1,28 @@
+.hero {
+  color: #0d202f;
+  width: 100%;
+
+  min-height: 900px;
+  position: relative;
+  overflow: hidden;
+  background-color: #000;
+  background-size: cover;
+  background-position: center;
+  height: auto;
+}
+
+.commands-table {
+  padding: 1rem 2rem;
+}
+
+.commands-header {
+  background-color: #425465;
+}
+
+.commands-row {
+  color: black;
+  background-color: white;
+}
+.commands-row:nth-child(odd) {
+  background-color: #f5f7fa;
+}
