@@ -32,11 +32,13 @@ DISCORD_TOKEN={TOKEN}
   ```
 - This will set up auto formatting upon saving a file.
 
-7. To enable `pylint` on `pre-push`, please run following command:
+7. To disable `pylint` on `pre-push` and enable on `pre-commit`, please run following command:
 
 ```
-pre-commit install --hook-type pre-push
+pre-commit uninstall --hook-type pre-push
+pre-commit install --hook-type pre-commit
 ```
+After above command, if .git/hooks/pre-commit file has been created, then your pre-commit should work as expected.
 
 8. To call the bot with the desired prefix locally,
 
