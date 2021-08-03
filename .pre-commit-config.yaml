@@ -3,9 +3,12 @@ repos:
     hooks:
       - id: pylint
         name: pylint
-        stages: [push]
+        stages: [commit]
         language: system
         entry: pylint
         types: [python]
         args:
-        -   --rcfile=.pylintrc
+        - --rcfile=.pylintrc
+default_language_version:
+  python: python3.9
+default_stages: [commit]
