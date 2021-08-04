@@ -1,6 +1,6 @@
 # Befor putting PR (put x in bracket if you ran it.);
 
-- [ ] Run `pylint $(git ls-files '*.py')` passes
+- [ ] Run `pylint --rcfile=.pylintrc $(git ls-files '*.py')` passes
 
 # Overview
 
