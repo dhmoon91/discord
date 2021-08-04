@@ -349,9 +349,9 @@ async def add_summoner(ctx, *, message):
             # TODO: Simplify this - use base.py - update()
             try:
                 session.commit()
-            except Exception as e_values:
+            except Exception as e_value:
                 session.rollback()
-                raise e_values
+                raise e_value
             finally:
                 session.close()
         else:
@@ -600,9 +600,9 @@ async def remove_summoner(ctx, *, message):
         # TODO: Simplify this - use base.py - update()
         try:
             session.commit()
-        except Exception as e_values:
+        except Exception as e_value:
             session.rollback()
-            raise e_values
+            raise e_value
         finally:
             session.close()
 
