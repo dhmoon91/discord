@@ -22,7 +22,6 @@ def get_file_path(file_path):
     return join(root_dirname, file_path)
 
 
-# pylint: disable=fixme
 # TODO: Properly check for each fields existence and set values.
 # eg; Currently assumes title, description, color will be in 'embed_object',
 # same for inner objects of 'fields', author object.
@@ -58,7 +57,6 @@ def create_embed(embed_object):
                 )
 
         return embed
-    # pylint: disable=broad-except
     except Exception as e_values:
         print("error embed")
         print(e_values)

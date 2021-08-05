@@ -117,7 +117,6 @@ async def help_command(ctx):
                 )
         await ctx.send(embed=create_embed(embed_data))
 
-    # pylint: disable=broad-except
     except Exception:
         err_embed = discord.Embed(
             title="Error",
@@ -190,7 +189,6 @@ async def get_rank(ctx, *, name: str):  # using * for get a summoner name with s
 
         await ctx.send(file=file, embed=create_embed(embed_data))
 
-    # pylint: disable=broad-except
     except Exception as e_values:
         # 404 error means Data not found in API
         if "404" in str(e_values):
@@ -236,7 +234,6 @@ async def get_last_match(ctx, *, name: str):
         )
         # os.remove("df_styled.png")
 
-    # pylint: disable=broad-except
     except Exception as e_values:
         # 404 error means Data not found in API
         if "404" in str(e_values):
@@ -259,7 +256,6 @@ async def get_last_match(ctx, *, name: str):
 
 
 @bot.command(name="add", help="Add the players to the list")
-# pylint: disable=too-many-locals, too-many-branches, too-many-statements
 async def add_summoner(ctx, *, message):
     """Writes list of summoners to local
     json file and sends the list to the bot"""
@@ -366,7 +362,6 @@ async def add_summoner(ctx, *, message):
         # display list of summoners
         await display_current_list_of_summoners(ctx)
 
-    # pylint: disable=broad-except
     except Exception as e_values:
         if "404" in str(e_values):
             error_title = "Invalid Summoner Name"
@@ -443,7 +438,6 @@ async def display_current_list_of_summoners(ctx):
 
         await ctx.send(f"Total Number of Summoners: {total_number_of_players}")
 
-    # pylint: disable=broad-except
     except Exception:
         embed_data = EmbedData()
         embed_data.title = ":warning:   No Summoners in the List"
@@ -453,7 +447,6 @@ async def display_current_list_of_summoners(ctx):
 
 
 @bot.command(name="teams", help="Display two teams")
-# pylint: disable=too-many-locals, too-many-branches
 async def display_teams(ctx):
     """Make and display teams to bot from list of summoners in json"""
     try:
@@ -506,7 +499,6 @@ async def display_teams(ctx):
             )
             await ctx.send(file=file, embed=create_embed(embed_data))
 
-    # pylint: disable=broad-except
     except Exception as e_values:
         if str(e_values) in ["NOT ENOUGH PLAYERS", "NO SUMMONERS IN THE LIST"]:
             error_title = e_values.args[0]
@@ -524,7 +516,6 @@ async def display_teams(ctx):
         await ctx.send(embed=create_embed(embed_data))
 
 
-# pylint: disable=too-many-locals, too-many-branches, too-many-statements
 @bot.command(name="remove", help="Remove player(s) from the list")
 async def remove_summoner(ctx, *, message):
     """Remove summoner(s) from list
@@ -609,7 +600,6 @@ async def remove_summoner(ctx, *, message):
         # display list of summoners
         await display_current_list_of_summoners(ctx)
 
-    # pylint: disable=broad-except
     except Exception as e_values:
         if "Limit Exceeded" in str(e_values) or "Unregistered Summoner(s)" in str(
             e_values
@@ -630,7 +620,6 @@ async def remove_summoner(ctx, *, message):
         await display_current_list_of_summoners(ctx)
 
 
-# pylint: disable=too-many-locals, too-many-branches, too-many-statements
 @bot.command(name="clear", help="Clear player(s) from the list")
 async def clear_list_of_summoners(ctx):
     """Clear out summoners from the list"""
@@ -645,7 +634,6 @@ async def clear_list_of_summoners(ctx):
         # display list of summoners
         await display_current_list_of_summoners(ctx)
 
-    # pylint: disable=broad-except
     except Exception as e_values:
         error_title = f"{e_values}"
         error_description = "Oops! Something went wrong.\nTry again!"
