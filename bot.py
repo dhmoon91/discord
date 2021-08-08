@@ -344,7 +344,9 @@ async def add_summoner(ctx, *, message):
             return
 
         # make dictionary for newly coming in players
-        new_team_members = create_summoner_list(user_input_names)
+        new_team_members = create_summoner_list(
+            user_input_names, get_region(str(ctx.guild.id))
+        )
 
         # If we had a db record, update.
         if members_list_record_cached:
