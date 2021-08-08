@@ -18,27 +18,31 @@ from discord.ext import commands
 
 from db.db import bind_engine, Session
 from db.models.team_members import TeamMembers
-
+from db.models.channels import Channels
+from db.utils import check_cached
 
 # Riot util func.
-# pylint: disable=unused-import
 from riot_api import (
     get_summoner_rank,
-    previous_match,
     create_summoner_list,
-    check_cached,
 )
 
-# from riot_api import check_cached
-
 from utils.embed_object import EmbedData
-from utils.utils import create_embed, get_file_path, normalize_name, create_team_string
+from utils.utils import (
+    create_embed,
+    get_file_path,
+    normalize_name,
+    create_team_string,
+    get_region,
+)
 from utils.make_teams import make_teams
 from utils.constants import (
     TIER_RANK_MAP,
     MAX_NUM_PLAYERS_TEAM,
     UNCOMMON_TIERS,
     UNCOMMON_TIER_DISPLAY_MAP,
+    REGION_MAP,
+    REGION_DISPLAY_MAP,
 )
 
 intents = discord.Intents.default()
@@ -64,10 +68,6 @@ bot = commands.Bot(
     help_command=None,
 )
 
-# folder and path for data json
-data_folder_path = get_file_path("data/")
-json_path = data_folder_path + "data.json"
-
 
 @bot.event
 async def on_ready():
@@ -75,13 +75,78 @@ async def on_ready():
     print(f"{bot.user.name} has connected to Discord!")
 
 
-@bot.event
-async def on_member_join(member):
-    """Sends personal discord message to the membed who join"""
-    # create a direct message channel.
-    await member.create_dm()
-    # Send welcome msg.
-    await member.dm_channel.send(f"Hi {member.name}, welcome to 관전남 월드!")
+@bot.command(name="region", help="Set region for data pull")
+async def set_region(ctx, *, message):
+    """
+    Set region for data pull
+    """
+
+    try:
+        async with ctx.typing():
+            await asyncio.sleep(1)
+
+        # Clean out the input
+        if REGION_MAP.get(message.lower().strip()) is None:
+            print("Invalid region input")
+            raise Exception(
+                "Invalid region input", "Available regions: NA, KR, EUW, EUN, JP"
+            )
+
+        region = REGION_MAP[message.lower().strip()]
+
+        # initializing server id.
+        server_id = str(ctx.guild.id)
+
+        # Grab team member list from db
+        channel_saved = check_cached(server_id, Channels, Channels.channel_id)
+        if channel_saved is None:
+            region_data = Channels(
+                str(ctx.guild.id),
+                region,
+            )
+            region_data.create()
+        else:
+            print("UPDATE RECORD")
+            channel_saved_result = (
+                session.query(Channels)
+                .filter(Channels.channel_id == server_id)
+                .one_or_none()
+            )
+            channel_saved_result.region = region
+
+            # Update record.
+            # TODO: Simplify this - use base.py - update()
+            try:
+                session.commit()
+            except Exception as e_value:
+                session.rollback()
+                raise e_value
+            finally:
+                session.close()
+        # Return success message
+        embed_data = EmbedData()
+        embed_data.title = "Region successfully updated"
+        embed_data.description = f"All data will be pulled from {region}"
+        embed_data.color = discord.Color.green()
+
+        await ctx.send(embed=create_embed(embed_data))
+    except Exception as e_values:
+        error_title = "Error"
+        error_description = (
+            "Oops! Something went wrong.\
+                \n\n Please type  `rank --help`  to see how to use and try again!",
+        )
+        color = discord.Color.red()
+
+        if "Invalid region input" in str(e_values):
+            error_title = e_values.args[0]
+            error_description = e_values.args[1]
+
+        embed_data = EmbedData()
+        embed_data.title = ":x:   {0}".format(error_title)
+        embed_data.description = "{0}".format(error_description)
+        embed_data.color = color
+        await ctx.send(embed=create_embed(embed_data))
 
 
 # Custom help command
@@ -95,7 +160,8 @@ async def help_command(ctx):
         embed_data = EmbedData()
         embed_data.title = f"How to use {bot.user.name}"
         embed_data.description = (
-            f"`All Data from NA server`\n\n <@!{bot.user.id}> <command>"
+            f"`All Data from {REGION_DISPLAY_MAP.get(get_region( str(ctx.guild.id)))} "
+            f"server`\n\n <@!{bot.user.id}> <command>"
         )
         embed_data.color = discord.Color.gold()
 
@@ -136,7 +202,7 @@ async def get_rank(ctx, *, name: str):  # using * for get a summoner name with s
         async with ctx.typing():
             await asyncio.sleep(1)
 
-        summoner_info = get_summoner_rank(name)
+        summoner_info = get_summoner_rank(name, get_region(str(ctx.guild.id)))
 
         embed_data = EmbedData()
         embed_data.title = "Solo/Duo Rank"
@@ -182,7 +248,10 @@ async def get_rank(ctx, *, name: str):  # using * for get a summoner name with s
         embed_data.fields.append(
             {
                 "name": "** **",
-                "value": "`All Data from NA server`",
+                "value": (
+                    f"`All Data from {REGION_DISPLAY_MAP.get(get_region(str(ctx.guild.id)))}"
+                    " server`"
+                ),
                 "inline": False,
             }
         )
@@ -190,6 +259,7 @@ async def get_rank(ctx, *, name: str):  # using * for get a summoner name with s
         await ctx.send(file=file, embed=create_embed(embed_data))
 
     except Exception as e_values:
+        print(e_values)
         # 404 error means Data not found in API
         if "404" in str(e_values):
             error_title = f'Summoner "{name}" is not found'
@@ -200,52 +270,6 @@ async def get_rank(ctx, *, name: str):  # using * for get a summoner name with s
             error_title = "Error"
             error_description = "Oops! Something went wrong.\
               \n\nPlease type  `rank --help`  to see how to use and tyr again!"
-
-        embed_data = EmbedData()
-        embed_data.title = ":x:   {0}".format(error_title)
-        embed_data.description = "{0}".format(error_description)
-        embed_data.color = discord.Color.red()
-
-        await ctx.send(embed=create_embed(embed_data))
-
-
-# TODO: REWORK THIS WITHOUT pd
-@bot.command(
-    name="last_match",
-    help="Displays the information about the latest game of the summoner.",
-)
-async def get_last_match(ctx, *, name: str):
-    """Sends the summoner's last match information to the bot"""
-    try:
-
-        # last_match_info = previous_match(name)
-        embed = discord.Embed(
-            title="last match",
-            description="Under development",
-            color=discord.Color.red(),
-        )
-        # dfi.export(last_match_info, "df_styled.png")
-        # file = discord.File("df_styled.png")
-        # embed = discord.Embed()
-        # embed.set_image(url="attachment://df_styled.png")
-        await ctx.send(
-            embed=embed,
-            # file=file
-        )
-        # os.remove("df_styled.png")
-
-    except Exception as e_values:
-        # 404 error means Data not found in API
-        if "404" in str(e_values):
-            error_title = f'Summoner "{name}" is not found'
-            error_description = f"Please check the summoner name agian \n \
-              \n __*NOTE*__ :   **{get_last_match.name}** command only accepts one summoner name.\
-              \n\n Please type  `last_match --help`  to see how to use"
-
-        else:
-            error_title = "Error"
-            error_description = "Oops! Something went wrong.\
-              \n\nPlease type  `last_match --help`  to see how to use and try again!"
 
         embed_data = EmbedData()
         embed_data.title = ":x:   {0}".format(error_title)

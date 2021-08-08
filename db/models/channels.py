@@ -1,17 +1,22 @@
 """channels model mapping"""
-import datetime
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String
 from ..db import Base
+from .base import BaseMixin
 
 
-class Channels(Base):
+class Channels(BaseMixin, Base):
     """channels model definition"""
 
     __tablename__ = "channels"
 
-    channel_id = Column(Integer, primary_key=True)
+    channel_id = Column(Integer, unique=True)
     region = Column(String(20))
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(
-        DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow
-    )
+
+    def __init__(
+        self,
+        channel_id,
+        region,
+    ):
+        super().__init__()
+        self.channel_id = channel_id
+        self.region = region

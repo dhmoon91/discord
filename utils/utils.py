@@ -8,11 +8,14 @@ from os.path import dirname, join
 # Discord
 import discord
 
+from db.utils import check_cached
+from db.models.channels import Channels
 from .constants import (
     TIER_RANK_MAP,
     UNCOMMON_TIERS,
     UNCOMMON_TIER_DISPLAY_MAP,
 )
+
 
 root_dirname = dirname(dirname(__file__))
 
@@ -85,3 +88,15 @@ def create_team_string(team_members):
             )
         )
     return team_output_string
+
+
+def get_region(server_id):
+    """
+    Get API region point.
+    Default will be 'na1'.
+    """
+    region = "na1"
+    get_channel = check_cached(server_id, Channels, Channels.channel_id)
+    if get_channel:
+        region = get_channel["dict"]["region"]
+    return region
