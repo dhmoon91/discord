@@ -13,3 +13,4 @@ SQLAlchemy
 psycopg2
 alembic
 sqlalchemy-json
+pytest
