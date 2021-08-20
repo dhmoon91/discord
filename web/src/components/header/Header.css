@@ -1,0 +1,19 @@
+.header-title {
+  height: 600px;
+  width: 1000px;
+}
+.header-info {
+  height: 100%;
+  width: 100%;
+  background-image: url("../../image/header-background.jpg");
+  background-size: cover;
+}
+
+.header-heading {
+  color: white;
+  margin-left: 100px;
+  top: 125px;
+  position: relative;
+
+  /* margin: -410px 630px 0 0; */
+}

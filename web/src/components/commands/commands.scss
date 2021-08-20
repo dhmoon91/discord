@@ -26,3 +26,40 @@
 .commands-row:nth-child(odd) {
   background-color: #f5f7fa;
 }
+
+.w-100 {
+  margin-top: 3rem;
+  font-size: 1rem;
+  font-weight: 550;
+}
+
+.usage {
+  color: #3c6ebc;
+  cursor: pointer;
+}
+
+.my-modal {
+  text-align: center;
+  max-width: max-content;
+}
+
+.img-fluid {
+  object-fit: cover;
+  max-width: inherit;
+  max-height: calc(100vh - 225px);
+}
+
+@media screen and (max-width: 767px) {
+  .w-100 {
+    margin-top: 10px;
+    font-size: 12px;
+    font-weight: 550;
+  }
+
+  .img-fluid {
+    object-fit: cover;
+    width: 87vw;
+    max-height: 700px;
+    margin-right: 1rem;
+  }
+}
