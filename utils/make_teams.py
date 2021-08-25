@@ -34,8 +34,8 @@ def make_teams(list_of_summoners: dict):
         list_of_summoners, key=lambda i: i["rank_value"], reverse=True
     )
 
-    blue_team = list()
-    red_team = list()
+    blue_team = []
+    red_team = []
 
     # distirbute the sorted list into two different list
     for index, summoner in enumerate(sorted_list_of_summoners):
