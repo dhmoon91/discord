@@ -33,7 +33,7 @@ const AboutMobile = () => {
           <div className="container p-3 my-3 bg-dark text-light number-of-users">
             <div className="d-flex justify-content-around">
               <div className="d-flex flex-column align-items-center text-center">
-                <h7>Used By Over 1,000 Servers</h7>
+                <h7>Used By Over 100 channels</h7>
               </div>
 
               <div className="d-flex flex-column align-items-center text-center">
