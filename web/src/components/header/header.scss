@@ -1,3 +1,16 @@
 .nav-link {
   color: white !important;
+  margin-left: 0.5rem;
+}
+
+.nav-link:hover {
+  background-color: #121e34;
+  border-radius: 10px 10px 10px 10px;
+}
+
+.get-porobot {
+  // font-weight: 1000;
+  color: white !important;
+  background-color: #406da2;
+  border-radius: 10px 10px 10px 10px;
 }
