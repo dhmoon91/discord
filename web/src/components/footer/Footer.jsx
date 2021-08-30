@@ -26,7 +26,7 @@ const Footer = () => {
                 If there is any issues or have any questions regarding our bot, please mention in our{' '}
                 <a
                   className="server-link-text"
-                  href="https://discord.gg/AZe8ETHV"
+                  href="https://discord.gg/KHAZxSWsUJ"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -35,8 +35,8 @@ const Footer = () => {
                 .
               </p>
               <div className="mt-4">
-                <a href="https://discord.gg/AZe8ETHV" target="_blank" rel="noopener noreferrer">
-                  <img src="https://discordapp.com/api/guilds/265503362739339274/embed.png" />
+                <a href="https://discord.gg/KHAZxSWsUJ" target="_blank" rel="noopener noreferrer">
+                  <img src="https://discordapp.com/api/guilds/877799693902569492/embed.png" />
                 </a>
               </div>
             </div>
