@@ -37,3 +37,44 @@ TIER_VALUE = {
 }
 
 RANK_VALUE = {"I": 0.75, "II": 0.5, "III": 0.25, "IV": 0}
+
+# List of names and API server endpoint.
+# TODO: What's code for china?
+REGION_MAP = {
+    "europenorth": "eun1",
+    "europewest": "euw1",
+    # Japan
+    "japan": "jp1",
+    "jp": "jp1",
+    # Korea
+    "kr": "kr",
+    "korea": "kr",
+    "la": "la1",
+    # What's this?
+    "la2": "la2",
+    # North america
+    "na": "na1",
+    "canada": "na1",
+    "us": "na1",
+    "unitedstates": "na1",
+    # Oceania
+    "oc": "oc1",
+    "oceania": "oc1",
+    "tr": "tr1",
+    # Russia
+    "ru": "ru1",
+    "russia": "ru1",
+}
+
+# Mapping back server endpoint to readable name.
+REGION_DISPLAY_MAP = {
+    "na1": "NA",
+    "eun1": "EUR NORTH",
+    "euw1": "EUR WEST",
+    "kr": "KOREA",
+    "jp1": "Japan",
+    "ru": "RUSSIA",
+    "oc1": "OCEANIA",
+    "la1": "Latin",
+    "la2": "Latin2",
+}

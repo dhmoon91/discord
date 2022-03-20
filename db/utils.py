@@ -1,4 +1,4 @@
-from db.db import Session
+from .db import Session
 
 session = Session()
 

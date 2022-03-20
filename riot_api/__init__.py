@@ -18,7 +18,6 @@ load_dotenv()
 RIOTAPIKEY = os.getenv("RIOT_API_KEY")
 
 watcher = LolWatcher(RIOTAPIKEY)
-MY_REGION = "na1"
 
 # pylint: disable=wrong-import-position
 from .methods import *

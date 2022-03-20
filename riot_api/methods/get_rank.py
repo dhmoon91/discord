@@ -3,11 +3,10 @@ Data processing the data from riot API
 """
 import pydash
 from db.models.summoners import Summoners
-
+from db.utils import check_cached
 from utils.utils import get_file_path
 
-from .. import watcher, MY_REGION
-from .utils import check_cached
+from .. import watcher
 
 
 def create_summoner_profile_data(summoner: dict):
@@ -39,7 +38,7 @@ def create_summoner_profile_data(summoner: dict):
 
 
 # Get summoner rank.
-def get_summoner_rank(name: str):
+def get_summoner_rank(name: str, region: str):
     """Gets the summoner's rank information from riot watcher api
     Parameters:
     name (str): name of the summoner
@@ -50,8 +49,8 @@ def get_summoner_rank(name: str):
     """
 
     # We need to get id
-    user = watcher.summoner.by_name(MY_REGION, name)
-
+    user = watcher.summoner.by_name(region, name)
+    print(user)
     # First check if we have existing record for given summoner name
     summoner_cached = check_cached(user["name"], Summoners, Summoners.summoner_name)
 
@@ -60,7 +59,7 @@ def get_summoner_rank(name: str):
         return create_summoner_profile_data(summoner_cached["dict"])
 
     # Cached value doesn't exist; Grab data from API.
-    ranked_stat = watcher.league.by_summoner(MY_REGION, user["id"])
+    ranked_stat = watcher.league.by_summoner(region, user["id"])
 
     # Init 'profile_data' to contain all data needed in one place.
     profile_data = {}
@@ -73,7 +72,7 @@ def get_summoner_rank(name: str):
     # Get summoner Icon Image
     profileiconid = user["profileIconId"]
 
-    version = watcher.data_dragon.versions_for_region(MY_REGION)["v"]
+    version = watcher.data_dragon.versions_for_region(region)["v"]
     profile_data["summoner_icon_image_url"] = (
         "http://ddragon.leagueoflegends.com/"
         + f"cdn/{version}/img/profileicon/{profileiconid}.png"

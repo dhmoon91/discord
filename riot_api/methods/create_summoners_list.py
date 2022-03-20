@@ -1,7 +1,7 @@
 from .get_rank import get_summoner_rank
 
 
-def create_summoner_list(user_input_list_names: list):
+def create_summoner_list(user_input_list_names: list, region: str):
     """Gets the list of summoner names and returns the information abou the summoners
     Parameters:
     players_list (list): list of summoner names
@@ -18,7 +18,7 @@ def create_summoner_list(user_input_list_names: list):
         # accessing each player
         for user_input_list_name in user_input_list_names:
             # 'get_summoner_rank' will handle getting summoner's data.
-            summoner_data = get_summoner_rank(user_input_list_name)
+            summoner_data = get_summoner_rank(user_input_list_name, region)
 
             members_to_add.append(
                 {
